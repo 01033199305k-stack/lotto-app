@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로또 번호 추첨기</title>
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<link rel="icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="card">
+    <h1>🎰 로또 번호 추첨기</h1>
+    <p class="subtitle">과거 당첨 데이터의 동반출현 패턴을 분석한 추천 번호예요</p>
+
+    <div class="strategies">
+      <button class="strategy-btn active" data-strategy="reliability">신뢰도 추천</button>
+      <button class="strategy-btn" data-strategy="frequency">빈도 추천</button>
+      <button class="strategy-btn" data-strategy="mixed">혼합 추천</button>
+      <button class="strategy-btn" data-strategy="random">완전 무작위</button>
+    </div>
+
+    <div class="count-row">
+      <span class="count-label">게임 수</span>
+      <div class="count-picker" id="count-picker">
+        <button class="count-btn active" data-count="1">1</button>
+        <button class="count-btn" data-count="2">2</button>
+        <button class="count-btn" data-count="3">3</button>
+        <button class="count-btn" data-count="4">4</button>
+        <button class="count-btn" data-count="5">5</button>
+      </div>
+    </div>
+
+    <div class="games" id="games"></div>
+
+    <button id="draw-btn" class="draw-btn">번호 뽑기</button>
+
+    <details class="stats">
+      <summary>제외할 번호 설정</summary>
+      <p class="hint">뽑히지 않았으면 하는 번호를 눌러서 선택하세요.</p>
+      <div id="exclude-grid" class="exclude-grid"></div>
+    </details>
+
+    <details class="stats">
+      <summary>번호별 신뢰도 점수 보기</summary>
+      <div id="stats-chart" class="stats-chart"></div>
+    </details>
+
+    <details class="stats" id="history-block">
+      <summary>
+        뽑기 히스토리
+        <button id="clear-history" class="clear-history-btn" type="button">전체 지우기</button>
+      </summary>
+      <div id="history-list" class="history-list"></div>
+    </details>
+
+    <details class="stats">
+      <summary>당첨번호 대조</summary>
+      <p class="hint">발표된 당첨번호 6개를 입력하면 히스토리와 몇 개 맞았는지 확인해줘요.</p>
+      <div class="check-inputs" id="check-inputs">
+        <input type="number" min="1" max="45" class="check-num">
+        <input type="number" min="1" max="45" class="check-num">
+        <input type="number" min="1" max="45" class="check-num">
+        <input type="number" min="1" max="45" class="check-num">
+        <input type="number" min="1" max="45" class="check-num">
+        <input type="number" min="1" max="45" class="check-num">
+        <span class="check-plus">+ 보너스</span>
+        <input type="number" min="1" max="45" class="check-num check-bonus">
+      </div>
+      <button id="check-btn" class="draw-btn secondary" type="button">대조하기</button>
+      <div id="check-results" class="check-results"></div>
+    </details>
+
+    <p class="disclaimer">⚠️ 과거 데이터 분석 결과이며 당첨을 보장하지 않습니다. 재미로만 즐겨주세요.</p>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
