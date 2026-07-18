@@ -293,7 +293,9 @@ h1 {
 .disclaimer {
   margin: 20px 0 0;
   font-size: 0.75rem;
+  line-height: 1.6;
   color: var(--muted);
+  text-align: left;
 }
 
 .footer {
