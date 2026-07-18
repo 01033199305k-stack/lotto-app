@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>개인정보처리방침 - 로또 번호 추첨기</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="card" style="text-align:left; max-width:640px;">
+    <h1 style="font-size:1.3rem;">개인정보처리방침</h1>
+    <p class="subtitle" style="text-align:left;">최종 수정일: 2026년 7월 18일</p>
+
+    <p style="font-size:0.9rem; line-height:1.7; color:var(--text);">
+      본 사이트("로또 번호 추첨기")는 회원가입이나 별도의 개인정보 수집 절차 없이 누구나 이용할 수 있습니다.
+    </p>
+
+    <h2 style="font-size:1.05rem; margin-top:22px;">1. 수집하는 정보</h2>
+    <p style="font-size:0.9rem; line-height:1.7;">
+      뽑기 히스토리, 제외 번호 설정은 서버로 전송되지 않고 이용자의 브라우저 로컬 스토리지(localStorage)에만 저장됩니다.
+      본 사이트는 회원가입, 이메일, 결제 정보 등 개인 식별 정보를 수집하지 않습니다.
+    </p>
+
+    <h2 style="font-size:1.05rem; margin-top:22px;">2. 광고 및 쿠키</h2>
+    <p style="font-size:0.9rem; line-height:1.7;">
+      본 사이트는 Google AdSense를 통해 광고를 게재할 수 있습니다. Google을 포함한 제3자 광고 제공업체는 쿠키를 사용해
+      이용자의 이전 방문 기록을 바탕으로 광고를 게재합니다. 이용자는
+      <a href="https://adssettings.google.com" target="_blank" rel="noopener">Google 광고 설정</a>에서
+      맞춤 광고를 비활성화할 수 있습니다.
+    </p>
+
+    <h2 style="font-size:1.05rem; margin-top:22px;">3. 문의</h2>
+    <p style="font-size:0.9rem; line-height:1.7;">
+      본 방침에 대한 문의는 사이트 운영자에게 연락해주세요.
+    </p>
+
+    <p style="margin-top:24px;"><a href="{{ url_for('index') }}">← 홈으로</a></p>
+  </main>
+</body>
+</html>

@@ -74,6 +74,20 @@
     </details>
 
     <p class="disclaimer">⚠️ 과거 데이터 분석 결과이며 당첨을 보장하지 않습니다. 재미로만 즐겨주세요.</p>
+
+    <details class="stats">
+      <summary>이 사이트는 어떻게 번호를 추천하나요?</summary>
+      <p class="hint" style="line-height:1.6;">
+        동행복권 로또 6/45의 과거 당첨 데이터에서 2개·3개·4개 번호가 함께 나온 "동반출현" 빈도를 집계해
+        번호별 점수를 매깁니다. <strong>신뢰도 추천</strong>은 이 점수를, <strong>빈도 추천</strong>은 단순 출현 횟수를,
+        <strong>혼합 추천</strong>은 둘을 함께 가중치로 사용해 번호를 뽑습니다. 다만 로또는 완전한 무작위 추첨이라
+        과거 데이터가 미래 당첨을 예측하지 못한다는 점을 꼭 기억해주세요 — 모든 추천은 재미를 위한 참고용입니다.
+      </p>
+    </details>
+
+    <footer class="footer">
+      <a href="{{ url_for('privacy') }}">개인정보처리방침</a>
+    </footer>
   </main>
 
   <div id="toast" class="toast"></div>
