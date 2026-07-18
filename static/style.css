@@ -296,6 +296,7 @@ h1 {
   line-height: 1.6;
   color: var(--muted);
   text-align: left;
+  word-break: keep-all;
 }
 
 .footer {
