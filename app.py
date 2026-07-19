@@ -4,7 +4,7 @@ import os
 import random
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 
 app = Flask(__name__)
 
@@ -220,6 +220,23 @@ def index():
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
+
+
+@app.route("/robots.txt")
+def robots():
+    body = "User-agent: *\nAllow: /\nSitemap: https://lotto-app-m0fe.onrender.com/sitemap.xml\n"
+    return Response(body, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    base = "https://lotto-app-m0fe.onrender.com"
+    urls = [f"{base}/", f"{base}/privacy"]
+    body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for url in urls:
+        body += f"  <url><loc>{url}</loc></url>\n"
+    body += "</urlset>\n"
+    return Response(body, mimetype="application/xml")
 
 
 @app.route("/api/draw/<strategy>")

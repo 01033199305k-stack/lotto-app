@@ -48,12 +48,23 @@ function showToast(message) {
   showToast._t = setTimeout(() => toast.classList.remove("show"), 1600);
 }
 
-function copyGame(numbers) {
-  const text = numbers.join(", ");
+function copyText(text) {
   navigator.clipboard
     .writeText(text)
     .then(() => showToast(`복사됨: ${text}`))
     .catch(() => showToast("복사에 실패했어요"));
+}
+
+function shareText(text) {
+  if (navigator.share) {
+    navigator.share({ title: "복권 번호 추첨기", text, url: location.href }).catch(() => {});
+  } else {
+    copyText(text);
+  }
+}
+
+function copyGame(numbers) {
+  copyText(numbers.join(", "));
 }
 
 function buildGameRow(index) {
@@ -70,6 +81,15 @@ function buildGameRow(index) {
   copyBtn.textContent = "복사";
   top.appendChild(copyBtn);
 
+  let shareBtn = null;
+  if (navigator.share) {
+    shareBtn = document.createElement("button");
+    shareBtn.className = "copy-btn";
+    shareBtn.type = "button";
+    shareBtn.textContent = "공유";
+    top.appendChild(shareBtn);
+  }
+
   const balls = document.createElement("div");
   balls.className = "balls";
   for (let i = 0; i < 6; i++) {
@@ -83,7 +103,7 @@ function buildGameRow(index) {
   row.appendChild(balls);
   row.appendChild(meta);
 
-  return { row, balls, meta, copyBtn };
+  return { row, balls, meta, copyBtn, shareBtn };
 }
 
 function animateGame(ballsEl, finalNumbers, onDone, delay) {
@@ -193,6 +213,9 @@ async function draw() {
     let remaining = data.games.length;
     data.games.forEach((game, i) => {
       rows[i].copyBtn.addEventListener("click", () => copyGame(game.numbers));
+      if (rows[i].shareBtn) {
+        rows[i].shareBtn.addEventListener("click", () => shareText(game.numbers.join(", ")));
+      }
       animateGame(
         rows[i].balls,
         game.numbers,
@@ -437,6 +460,15 @@ function buildPensionGameRow(index) {
   copyBtn.textContent = "복사";
   top.appendChild(copyBtn);
 
+  let shareBtn = null;
+  if (navigator.share) {
+    shareBtn = document.createElement("button");
+    shareBtn.className = "copy-btn";
+    shareBtn.type = "button";
+    shareBtn.textContent = "공유";
+    top.appendChild(shareBtn);
+  }
+
   const result = document.createElement("div");
   result.className = "pension-result";
 
@@ -457,7 +489,7 @@ function buildPensionGameRow(index) {
   row.appendChild(result);
   row.appendChild(meta);
 
-  return { row, groupBadge, digitsEl, meta, copyBtn };
+  return { row, groupBadge, digitsEl, meta, copyBtn, shareBtn };
 }
 
 function animatePension(groupBadgeEl, digitsEl, finalGroup, finalNumber, onDone, delay) {
@@ -571,6 +603,9 @@ async function pensionDraw() {
     let remaining = data.games.length;
     data.games.forEach((game, i) => {
       rows[i].copyBtn.addEventListener("click", () => copyPension(game.group, game.number));
+      if (rows[i].shareBtn) {
+        rows[i].shareBtn.addEventListener("click", () => shareText(`${game.group}조 ${game.number}`));
+      }
       animatePension(
         rows[i].groupBadge,
         rows[i].digitsEl,
