@@ -790,3 +790,142 @@ async function loadLatestPension() {
 
 loadLatestLotto();
 loadLatestPension();
+
+// ---------- 내 번호 분석하기 ----------
+
+const analyzeInputsEl = document.getElementById("analyze-inputs");
+const analyzeBtn = document.getElementById("analyze-btn");
+const analyzeResults = document.getElementById("analyze-results");
+
+async function runAnalyze() {
+  const inputs = Array.from(analyzeInputsEl.querySelectorAll(".check-num"));
+  const numbers = inputs
+    .map((el) => parseInt(el.value, 10))
+    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 45);
+
+  if (numbers.length !== 6 || new Set(numbers).size !== 6) {
+    showToast("1~45 사이 서로 다른 6개 번호를 입력해주세요");
+    return;
+  }
+
+  const res = await fetch(`/api/analyze?numbers=${numbers.join(",")}`);
+  const data = await res.json();
+
+  if (!data.ok) {
+    showToast(data.error || "분석에 실패했어요");
+    return;
+  }
+
+  renderAnalyze(data.result);
+}
+
+function renderAnalyze(r) {
+  analyzeResults.innerHTML = "";
+
+  const ballsWrap = document.createElement("div");
+  ballsWrap.className = "history-balls";
+  r.numbers.forEach((num) => ballsWrap.appendChild(makeBall(num, colorRangeClass(num))));
+  analyzeResults.appendChild(ballsWrap);
+
+  const meta = document.createElement("div");
+  meta.className = "game-meta";
+  meta.innerHTML = `
+    <span>합계 ${r.sum}</span>
+    <span>홀${r.odd} 짝${r.even}</span>
+    <span>저${r.low} 고${r.high}</span>
+    <span>평균 신뢰도 ${r.avgScore}점</span>
+  `;
+  analyzeResults.appendChild(meta);
+
+  const chart = document.createElement("div");
+  chart.className = "stats-chart";
+  r.numbers.forEach((num) => {
+    const score = r.scores[num] ?? 0;
+    const row = document.createElement("div");
+    row.className = "stat-row";
+    row.innerHTML = `
+      <span>${num}</span>
+      <span class="stat-bar-track"><span class="stat-bar-fill" style="width:${score}%"></span></span>
+      <span>${score}</span>
+    `;
+    chart.appendChild(row);
+  });
+  analyzeResults.appendChild(chart);
+
+  const matchMsg = document.createElement("p");
+  if (r.bestMatch) {
+    matchMsg.className = "match-msg";
+    matchMsg.innerHTML = `<strong>${r.bestMatch.numbers.join(", ")}</strong>번은 과거 데이터에서 <strong>${r.bestMatch.count}회</strong> 함께 출현했어요.`;
+  } else {
+    matchMsg.className = "match-msg empty";
+    matchMsg.textContent = "이 번호 조합은 동반출현 데이터에 기록이 없어요.";
+  }
+  analyzeResults.appendChild(matchMsg);
+}
+
+analyzeBtn.addEventListener("click", runAnalyze);
+
+// ---------- 연금복권 내 번호 분석하기 ----------
+
+const pensionAnalyzeGroupSelect = document.getElementById("pension-analyze-group");
+const pensionAnalyzeInputsEl = document.getElementById("pension-analyze-inputs");
+const pensionAnalyzeBtn = document.getElementById("pension-analyze-btn");
+const pensionAnalyzeResults = document.getElementById("pension-analyze-results");
+
+async function runPensionAnalyze() {
+  const group = parseInt(pensionAnalyzeGroupSelect.value, 10);
+  const digitInputs = Array.from(pensionAnalyzeInputsEl.querySelectorAll(".pension-analyze-digit"));
+  const digits = digitInputs.map((el) => el.value);
+
+  if (digits.some((d) => d === "" || !/^[0-9]$/.test(d))) {
+    showToast("0~9 사이 숫자 6자리를 모두 입력해주세요");
+    return;
+  }
+
+  const number = digits.join("");
+  const res = await fetch(`/api/pension/analyze?group=${group}&number=${number}`);
+  const data = await res.json();
+
+  if (!data.ok) {
+    showToast(data.error || "분석에 실패했어요");
+    return;
+  }
+
+  renderPensionAnalyze(data.result);
+}
+
+function renderPensionAnalyze(r) {
+  pensionAnalyzeResults.innerHTML = "";
+
+  const resultWrap = document.createElement("div");
+  resultWrap.className = "pension-result";
+  resultWrap.appendChild(makeGroupBadge(r.group));
+  r.number.split("").forEach((d) => resultWrap.appendChild(makeDigit(d)));
+  pensionAnalyzeResults.appendChild(resultWrap);
+
+  const meta = document.createElement("div");
+  meta.className = "game-meta";
+  meta.innerHTML = `
+    <span>각 자리 합 ${r.digitSum}</span>
+    <span>조 신뢰도 ${r.groupScore}점</span>
+    <span>평균 자리 신뢰도 ${r.avgDigitScore}점</span>
+  `;
+  pensionAnalyzeResults.appendChild(meta);
+
+  const chart = document.createElement("div");
+  chart.className = "stats-chart";
+  r.number.split("").forEach((d, i) => {
+    const score = r.digitScores[i];
+    const row = document.createElement("div");
+    row.className = "stat-row";
+    row.innerHTML = `
+      <span>${d}</span>
+      <span class="stat-bar-track"><span class="stat-bar-fill" style="width:${score}%"></span></span>
+      <span>${score}</span>
+    `;
+    chart.appendChild(row);
+  });
+  pensionAnalyzeResults.appendChild(chart);
+}
+
+pensionAnalyzeBtn.addEventListener("click", runPensionAnalyze);

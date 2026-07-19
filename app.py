@@ -155,6 +155,24 @@ def pension_game_stats(group, number):
     }
 
 
+def analyze_pension(group, number):
+    group_score = round(_pension_weights["group"]["reliability"].get(group, 0), 1)
+    digit_scores = [
+        round(_pension_weights["digit"]["reliability"][pos].get(int(d), 0), 1)
+        for pos, d in enumerate(number)
+    ]
+    avg_digit_score = round(sum(digit_scores) / len(digit_scores), 1) if digit_scores else 0
+
+    return {
+        "group": group,
+        "number": number,
+        "digitSum": sum(int(d) for d in number),
+        "groupScore": group_score,
+        "digitScores": digit_scores,
+        "avgDigitScore": avg_digit_score,
+    }
+
+
 DH_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 LATEST_CACHE_TTL = 1800  # seconds
 
@@ -302,6 +320,35 @@ def game_stats(numbers):
     }
 
 
+def analyze_numbers(numbers):
+    numbers = sorted(numbers)
+    numset = set(numbers)
+    odd = sum(1 for n in numbers if n % 2 == 1)
+    low = sum(1 for n in numbers if n <= 22)
+
+    scores = {n: round(_number_scores.get(n, 0), 1) for n in numbers}
+    avg_score = round(sum(scores.values()) / len(scores), 1) if scores else 0
+
+    best_match = None
+    for combos in _combos_by_type.values():
+        for combo in combos:
+            if set(combo["numbers"]).issubset(numset):
+                if best_match is None or combo["count"] > best_match["count"]:
+                    best_match = {"numbers": sorted(combo["numbers"]), "count": combo["count"]}
+
+    return {
+        "numbers": numbers,
+        "sum": sum(numbers),
+        "odd": odd,
+        "even": 6 - odd,
+        "low": low,
+        "high": 6 - low,
+        "scores": scores,
+        "avgScore": avg_score,
+        "bestMatch": best_match,
+    }
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -382,6 +429,34 @@ def api_latest_lotto():
 def api_latest_pension():
     result = get_latest("pension")
     return jsonify({"ok": result is not None, "result": result})
+
+
+@app.route("/api/analyze")
+def api_analyze():
+    raw = request.args.get("numbers", "")
+    numbers = set()
+    for part in raw.split(","):
+        part = part.strip()
+        if part.isdigit():
+            n = int(part)
+            if 1 <= n <= 45:
+                numbers.add(n)
+
+    if len(numbers) != 6:
+        return jsonify({"ok": False, "error": "1~45 사이 서로 다른 번호 6개를 입력해주세요."})
+
+    return jsonify({"ok": True, "result": analyze_numbers(sorted(numbers))})
+
+
+@app.route("/api/pension/analyze")
+def api_pension_analyze():
+    group = request.args.get("group", type=int)
+    number = request.args.get("number", "")
+
+    if group not in PENSION_GROUPS or not re.fullmatch(r"[0-9]{6}", number or ""):
+        return jsonify({"ok": False, "error": "1~5 사이 조와 숫자 6자리를 입력해주세요."})
+
+    return jsonify({"ok": True, "result": analyze_pension(group, number)})
 
 
 _combos_by_type, _number_scores, _number_freq, _mixed_weights = load_data()

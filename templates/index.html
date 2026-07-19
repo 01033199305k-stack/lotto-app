@@ -105,6 +105,21 @@
       </details>
 
       <details class="stats">
+        <summary>내 번호 분석하기</summary>
+        <p class="hint">생일, 기념일처럼 직접 고른 번호 6개를 넣으면 신뢰도 점수와 동반출현 이력을 분석해줘요.</p>
+        <div class="check-inputs" id="analyze-inputs">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+        </div>
+        <button id="analyze-btn" class="draw-btn secondary" type="button">분석하기</button>
+        <div id="analyze-results" class="analyze-results"></div>
+      </details>
+
+      <details class="stats">
         <summary>이 사이트는 어떻게 번호를 추천하나요?</summary>
         <p class="hint" style="line-height:1.6;">
           동행복권 로또 6/45의 과거 당첨 데이터에서 2개·3개·4개 번호가 함께 나온 "동반출현" 빈도를 집계해
@@ -176,6 +191,28 @@
         </div>
         <button id="pension-check-btn" class="draw-btn secondary" type="button">대조하기</button>
         <div id="pension-check-results" class="check-results"></div>
+      </details>
+
+      <details class="stats">
+        <summary>내 번호 분석하기</summary>
+        <p class="hint">직접 고른 조와 번호 6자리를 넣으면 신뢰도 점수를 분석해줘요.</p>
+        <div class="check-inputs" id="pension-analyze-inputs">
+          <select id="pension-analyze-group" class="check-num pension-group-select">
+            <option value="1">1조</option>
+            <option value="2">2조</option>
+            <option value="3">3조</option>
+            <option value="4">4조</option>
+            <option value="5">5조</option>
+          </select>
+          <input type="number" min="0" max="9" class="check-num pension-analyze-digit">
+          <input type="number" min="0" max="9" class="check-num pension-analyze-digit">
+          <input type="number" min="0" max="9" class="check-num pension-analyze-digit">
+          <input type="number" min="0" max="9" class="check-num pension-analyze-digit">
+          <input type="number" min="0" max="9" class="check-num pension-analyze-digit">
+          <input type="number" min="0" max="9" class="check-num pension-analyze-digit">
+        </div>
+        <button id="pension-analyze-btn" class="draw-btn secondary" type="button">분석하기</button>
+        <div id="pension-analyze-results" class="analyze-results"></div>
       </details>
 
       <details class="stats">

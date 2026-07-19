@@ -647,6 +647,25 @@ h1 {
   color: var(--muted);
 }
 
+.analyze-results {
+  margin-top: 14px;
+}
+
+.analyze-results .game-meta {
+  margin: 12px 0;
+}
+
+.analyze-results .match-msg {
+  margin-top: 12px;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.analyze-results .match-msg.empty {
+  color: var(--muted);
+}
+
 .check-row {
   display: flex;
   align-items: center;
