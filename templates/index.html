@@ -13,78 +13,154 @@
 </head>
 <body>
   <main class="card">
-    <h1>로또 번호 추첨기</h1>
-    <p class="subtitle">과거 당첨 데이터의 동반출현 패턴을 분석한 추천 번호예요</p>
+    <h1>복권 번호 추첨기</h1>
+    <p class="subtitle">과거 당첨 데이터를 분석한 추천 번호예요</p>
 
-    <div class="strategies">
-      <button class="strategy-btn active" data-strategy="reliability">신뢰도 추천</button>
-      <button class="strategy-btn" data-strategy="frequency">빈도 추천</button>
-      <button class="strategy-btn" data-strategy="mixed">혼합 추천</button>
-      <button class="strategy-btn" data-strategy="random">완전 무작위</button>
+    <div class="game-tabs">
+      <button class="game-tab active" data-game="lotto">로또 6/45</button>
+      <button class="game-tab" data-game="pension">연금복권720+</button>
     </div>
 
-    <div class="count-row">
-      <span class="count-label">게임 수</span>
-      <div class="count-picker" id="count-picker">
-        <button class="count-btn active" data-count="1">1</button>
-        <button class="count-btn" data-count="2">2</button>
-        <button class="count-btn" data-count="3">3</button>
-        <button class="count-btn" data-count="4">4</button>
-        <button class="count-btn" data-count="5">5</button>
+    <section id="lotto-view" class="game-view">
+      <div class="strategies">
+        <button class="strategy-btn active" data-strategy="reliability">신뢰도 추천</button>
+        <button class="strategy-btn" data-strategy="frequency">빈도 추천</button>
+        <button class="strategy-btn" data-strategy="mixed">혼합 추천</button>
+        <button class="strategy-btn" data-strategy="random">완전 무작위</button>
       </div>
-    </div>
 
-    <div class="games" id="games"></div>
-
-    <button id="draw-btn" class="draw-btn">번호 뽑기</button>
-
-    <details class="stats">
-      <summary>제외할 번호 설정</summary>
-      <p class="hint">뽑히지 않았으면 하는 번호를 눌러서 선택하세요.</p>
-      <div id="exclude-grid" class="exclude-grid"></div>
-    </details>
-
-    <details class="stats">
-      <summary>번호별 신뢰도 점수 보기</summary>
-      <div id="stats-chart" class="stats-chart"></div>
-    </details>
-
-    <details class="stats" id="history-block">
-      <summary>
-        뽑기 히스토리
-        <button id="clear-history" class="clear-history-btn" type="button">전체 지우기</button>
-      </summary>
-      <div id="history-list" class="history-list"></div>
-    </details>
-
-    <details class="stats">
-      <summary>당첨번호 대조</summary>
-      <p class="hint">발표된 당첨번호 6개를 입력하면 히스토리와 몇 개 맞았는지 확인해줘요.</p>
-      <div class="check-inputs" id="check-inputs">
-        <input type="number" min="1" max="45" class="check-num">
-        <input type="number" min="1" max="45" class="check-num">
-        <input type="number" min="1" max="45" class="check-num">
-        <input type="number" min="1" max="45" class="check-num">
-        <input type="number" min="1" max="45" class="check-num">
-        <input type="number" min="1" max="45" class="check-num">
-        <span class="check-plus">+ 보너스</span>
-        <input type="number" min="1" max="45" class="check-num check-bonus">
+      <div class="count-row">
+        <span class="count-label">게임 수</span>
+        <div class="count-picker" id="count-picker">
+          <button class="count-btn active" data-count="1">1</button>
+          <button class="count-btn" data-count="2">2</button>
+          <button class="count-btn" data-count="3">3</button>
+          <button class="count-btn" data-count="4">4</button>
+          <button class="count-btn" data-count="5">5</button>
+        </div>
       </div>
-      <button id="check-btn" class="draw-btn secondary" type="button">대조하기</button>
-      <div id="check-results" class="check-results"></div>
-    </details>
+
+      <div class="games" id="games"></div>
+
+      <button id="draw-btn" class="draw-btn">번호 뽑기</button>
+
+      <details class="stats">
+        <summary>제외할 번호 설정</summary>
+        <p class="hint">뽑히지 않았으면 하는 번호를 눌러서 선택하세요.</p>
+        <div id="exclude-grid" class="exclude-grid"></div>
+      </details>
+
+      <details class="stats">
+        <summary>번호별 신뢰도 점수 보기</summary>
+        <div id="stats-chart" class="stats-chart"></div>
+      </details>
+
+      <details class="stats" id="history-block">
+        <summary>
+          뽑기 히스토리
+          <button id="clear-history" class="clear-history-btn" type="button">전체 지우기</button>
+        </summary>
+        <div id="history-list" class="history-list"></div>
+      </details>
+
+      <details class="stats">
+        <summary>당첨번호 대조</summary>
+        <p class="hint">발표된 당첨번호 6개를 입력하면 히스토리와 몇 개 맞았는지 확인해줘요.</p>
+        <div class="check-inputs" id="check-inputs">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <input type="number" min="1" max="45" class="check-num">
+          <span class="check-plus">+ 보너스</span>
+          <input type="number" min="1" max="45" class="check-num check-bonus">
+        </div>
+        <button id="check-btn" class="draw-btn secondary" type="button">대조하기</button>
+        <div id="check-results" class="check-results"></div>
+      </details>
+
+      <details class="stats">
+        <summary>이 사이트는 어떻게 번호를 추천하나요?</summary>
+        <p class="hint" style="line-height:1.6;">
+          동행복권 로또 6/45의 과거 당첨 데이터에서 2개·3개·4개 번호가 함께 나온 "동반출현" 빈도를 집계해
+          번호별 점수를 매깁니다. <strong>신뢰도 추천</strong>은 이 점수를, <strong>빈도 추천</strong>은 단순 출현 횟수를,
+          <strong>혼합 추천</strong>은 둘을 함께 가중치로 사용해 번호를 뽑습니다. 다만 로또는 완전한 무작위 추첨이라
+          과거 데이터가 미래 당첨을 예측하지 못한다는 점을 꼭 기억해주세요 — 모든 추천은 재미를 위한 참고용입니다.
+        </p>
+      </details>
+    </section>
+
+    <section id="pension-view" class="game-view" hidden>
+      <div class="strategies">
+        <button class="strategy-btn active" data-strategy="reliability">신뢰도 추천</button>
+        <button class="strategy-btn" data-strategy="frequency">빈도 추천</button>
+        <button class="strategy-btn" data-strategy="mixed">혼합 추천</button>
+        <button class="strategy-btn" data-strategy="random">완전 무작위</button>
+      </div>
+
+      <div class="count-row">
+        <span class="count-label">게임 수</span>
+        <div class="count-picker" id="pension-count-picker">
+          <button class="count-btn active" data-count="1">1</button>
+          <button class="count-btn" data-count="2">2</button>
+          <button class="count-btn" data-count="3">3</button>
+          <button class="count-btn" data-count="4">4</button>
+          <button class="count-btn" data-count="5">5</button>
+        </div>
+      </div>
+
+      <div class="games" id="pension-games"></div>
+
+      <button id="pension-draw-btn" class="draw-btn">번호 뽑기</button>
+
+      <details class="stats">
+        <summary>조별 신뢰도 점수 보기</summary>
+        <div id="pension-stats-chart" class="stats-chart"></div>
+      </details>
+
+      <details class="stats" id="pension-history-block">
+        <summary>
+          뽑기 히스토리
+          <button id="pension-clear-history" class="clear-history-btn" type="button">전체 지우기</button>
+        </summary>
+        <div id="pension-history-list" class="history-list"></div>
+      </details>
+
+      <details class="stats">
+        <summary>당첨번호 대조</summary>
+        <p class="hint">발표된 조와 번호 6자리를 입력하면 히스토리와 대조해줘요.</p>
+        <div class="check-inputs" id="pension-check-inputs">
+          <select id="pension-check-group" class="check-num pension-group-select">
+            <option value="1">1조</option>
+            <option value="2">2조</option>
+            <option value="3">3조</option>
+            <option value="4">4조</option>
+            <option value="5">5조</option>
+          </select>
+          <input type="number" min="0" max="9" class="check-num pension-check-digit">
+          <input type="number" min="0" max="9" class="check-num pension-check-digit">
+          <input type="number" min="0" max="9" class="check-num pension-check-digit">
+          <input type="number" min="0" max="9" class="check-num pension-check-digit">
+          <input type="number" min="0" max="9" class="check-num pension-check-digit">
+          <input type="number" min="0" max="9" class="check-num pension-check-digit">
+        </div>
+        <button id="pension-check-btn" class="draw-btn secondary" type="button">대조하기</button>
+        <div id="pension-check-results" class="check-results"></div>
+      </details>
+
+      <details class="stats">
+        <summary>이 사이트는 어떻게 번호를 추천하나요?</summary>
+        <p class="hint" style="line-height:1.6;">
+          연금복권720+는 "조(1~5)"와 6자리 번호로 구성됩니다. 과거 당첨 데이터에서 조별 당첨 빈도와
+          자리별(십만·만·천·백·십·일의 자리) 숫자 출현 빈도를 분석해 <strong>신뢰도 추천</strong>(최근 회차에 가중치)과
+          <strong>빈도 추천</strong>(전체 기간 단순 빈도)을 계산하고, <strong>혼합 추천</strong>은 둘을 함께 사용합니다.
+          역시 완전한 무작위 추첨이라 당첨을 보장하지 않습니다.
+        </p>
+      </details>
+    </section>
 
     <p class="disclaimer">⚠️ 과거 데이터 분석 결과이며 당첨을 보장하지 않습니다.<br>재미로만 즐겨주세요.</p>
-
-    <details class="stats">
-      <summary>이 사이트는 어떻게 번호를 추천하나요?</summary>
-      <p class="hint" style="line-height:1.6;">
-        동행복권 로또 6/45의 과거 당첨 데이터에서 2개·3개·4개 번호가 함께 나온 "동반출현" 빈도를 집계해
-        번호별 점수를 매깁니다. <strong>신뢰도 추천</strong>은 이 점수를, <strong>빈도 추천</strong>은 단순 출현 횟수를,
-        <strong>혼합 추천</strong>은 둘을 함께 가중치로 사용해 번호를 뽑습니다. 다만 로또는 완전한 무작위 추첨이라
-        과거 데이터가 미래 당첨을 예측하지 못한다는 점을 꼭 기억해주세요 — 모든 추천은 재미를 위한 참고용입니다.
-      </p>
-    </details>
 
     <footer class="footer">
       <a href="{{ url_for('privacy') }}">개인정보처리방침</a>

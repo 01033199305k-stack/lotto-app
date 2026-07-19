@@ -1,8 +1,8 @@
 const gamesEl = document.getElementById("games");
 const drawBtn = document.getElementById("draw-btn");
 const statsChart = document.getElementById("stats-chart");
-const strategyBtns = document.querySelectorAll(".strategy-btn");
-const countBtns = document.querySelectorAll(".count-btn");
+const strategyBtns = document.querySelectorAll("#lotto-view .strategy-btn");
+const countBtns = document.querySelectorAll("#lotto-view .count-btn");
 const historyList = document.getElementById("history-list");
 const clearHistoryBtn = document.getElementById("clear-history");
 const toast = document.getElementById("toast");
@@ -367,3 +367,338 @@ renderHistory();
 // initial placeholder row
 const initial = buildGameRow(0);
 gamesEl.appendChild(initial.row);
+
+// ---------- game tab switching ----------
+
+const gameTabs = document.querySelectorAll(".game-tab");
+const lottoView = document.getElementById("lotto-view");
+const pensionView = document.getElementById("pension-view");
+
+gameTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    gameTabs.forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    const game = tab.dataset.game;
+    lottoView.hidden = game !== "lotto";
+    pensionView.hidden = game !== "pension";
+  });
+});
+
+// ---------- 연금복권720+ ----------
+
+const pensionGamesEl = document.getElementById("pension-games");
+const pensionDrawBtn = document.getElementById("pension-draw-btn");
+const pensionStatsChart = document.getElementById("pension-stats-chart");
+const pensionStrategyBtns = document.querySelectorAll("#pension-view .strategy-btn");
+const pensionCountBtns = document.querySelectorAll("#pension-view .count-btn");
+const pensionHistoryList = document.getElementById("pension-history-list");
+const pensionClearHistoryBtn = document.getElementById("pension-clear-history");
+const pensionCheckInputsEl = document.getElementById("pension-check-inputs");
+const pensionCheckGroupSelect = document.getElementById("pension-check-group");
+const pensionCheckBtn = document.getElementById("pension-check-btn");
+const pensionCheckResults = document.getElementById("pension-check-results");
+
+const PENSION_HISTORY_KEY = "pension_draw_history";
+const PENSION_HISTORY_LIMIT = 30;
+const PENSION_RANK_SCORE = { "1등": 7, "2등": 6, "3등": 5, "4등": 4, "5등": 3, "6등": 2, "7등": 1, "낙첨": 0 };
+
+let pensionStrategy = "reliability";
+let pensionCount = 1;
+
+function makeGroupBadge(group, extraClass) {
+  const badge = document.createElement("div");
+  badge.className = `group-badge ${extraClass || ""}`.trim();
+  if (group === "?") {
+    badge.textContent = "?";
+  } else {
+    badge.innerHTML = `${group}<span class="group-label">조</span>`;
+  }
+  return badge;
+}
+
+function makeDigit(digit, extraClass) {
+  const el = document.createElement("div");
+  el.className = `digit ${extraClass || ""}`.trim();
+  el.textContent = digit;
+  return el;
+}
+
+function buildPensionGameRow(index) {
+  const row = document.createElement("div");
+  row.className = "game-row";
+
+  const top = document.createElement("div");
+  top.className = "game-row-top";
+  top.innerHTML = `<span class="game-label">GAME ${index + 1}</span>`;
+
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "copy-btn";
+  copyBtn.type = "button";
+  copyBtn.textContent = "복사";
+  top.appendChild(copyBtn);
+
+  const result = document.createElement("div");
+  result.className = "pension-result";
+
+  const groupBadge = makeGroupBadge("?", "placeholder");
+  result.appendChild(groupBadge);
+
+  const digitsEl = document.createElement("div");
+  digitsEl.className = "digits";
+  for (let i = 0; i < 6; i++) {
+    digitsEl.appendChild(makeDigit("?", "placeholder"));
+  }
+  result.appendChild(digitsEl);
+
+  const meta = document.createElement("div");
+  meta.className = "game-meta";
+
+  row.appendChild(top);
+  row.appendChild(result);
+  row.appendChild(meta);
+
+  return { row, groupBadge, digitsEl, meta, copyBtn };
+}
+
+function animatePension(groupBadgeEl, digitsEl, finalGroup, finalNumber, onDone, delay) {
+  const digitEls = Array.from(digitsEl.children);
+  groupBadgeEl.classList.remove("placeholder");
+  groupBadgeEl.classList.add("rolling");
+  digitEls.forEach((el) => {
+    el.classList.remove("placeholder");
+    el.classList.add("rolling");
+  });
+
+  const rollTimer = setInterval(() => {
+    groupBadgeEl.textContent = 1 + Math.floor(Math.random() * 5);
+    digitEls.forEach((el) => {
+      el.textContent = Math.floor(Math.random() * 10);
+    });
+  }, 60);
+
+  setTimeout(() => {
+    clearInterval(rollTimer);
+
+    groupBadgeEl.className = "group-badge settled";
+    groupBadgeEl.innerHTML = `${finalGroup}<span class="group-label">조</span>`;
+
+    digitEls.forEach((el, i) => {
+      setTimeout(() => {
+        el.className = "digit settled";
+        el.textContent = finalNumber[i];
+      }, i * 80);
+    });
+    setTimeout(onDone, 6 * 80 + 100);
+  }, delay);
+}
+
+function renderPensionMeta(metaEl, game) {
+  metaEl.innerHTML = `<span>각 자리 합 ${game.digitSum}</span>`;
+}
+
+function copyPension(group, number) {
+  const text = `${group}조 ${number}`;
+  navigator.clipboard
+    .writeText(text)
+    .then(() => showToast(`복사됨: ${text}`))
+    .catch(() => showToast("복사에 실패했어요"));
+}
+
+function loadPensionHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(PENSION_HISTORY_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function savePensionHistory(entries) {
+  localStorage.setItem(PENSION_HISTORY_KEY, JSON.stringify(entries.slice(0, PENSION_HISTORY_LIMIT)));
+}
+
+function renderPensionHistory() {
+  const entries = loadPensionHistory();
+  pensionHistoryList.innerHTML = "";
+
+  if (entries.length === 0) {
+    pensionHistoryList.innerHTML = '<p class="history-empty">아직 뽑은 기록이 없어요.</p>';
+    return;
+  }
+
+  entries.forEach((entry) => {
+    const item = document.createElement("div");
+    item.className = "history-item";
+
+    const tag = document.createElement("span");
+    tag.className = "history-tag";
+    tag.textContent = `${STRATEGY_LABEL[entry.strategy] || entry.strategy}`;
+
+    const result = document.createElement("span");
+    result.className = "history-balls";
+    result.textContent = `${entry.group}조 ${entry.number}`;
+
+    item.appendChild(tag);
+    item.appendChild(result);
+    pensionHistoryList.appendChild(item);
+  });
+}
+
+function addPensionToHistory(strategy, games) {
+  const entries = loadPensionHistory();
+  games.forEach((game) => {
+    entries.unshift({ strategy, group: game.group, number: game.number, ts: Date.now() });
+  });
+  savePensionHistory(entries);
+  renderPensionHistory();
+}
+
+async function pensionDraw() {
+  pensionDrawBtn.disabled = true;
+  pensionDrawBtn.textContent = "뽑는 중...";
+  pensionGamesEl.innerHTML = "";
+
+  const rows = [];
+  for (let i = 0; i < pensionCount; i++) {
+    const built = buildPensionGameRow(i);
+    pensionGamesEl.appendChild(built.row);
+    rows.push(built);
+  }
+
+  try {
+    const res = await fetch(`/api/pension/draw/${pensionStrategy}?count=${pensionCount}`);
+    const data = await res.json();
+
+    let remaining = data.games.length;
+    data.games.forEach((game, i) => {
+      rows[i].copyBtn.addEventListener("click", () => copyPension(game.group, game.number));
+      animatePension(
+        rows[i].groupBadge,
+        rows[i].digitsEl,
+        game.group,
+        game.number,
+        () => {
+          renderPensionMeta(rows[i].meta, game);
+          remaining -= 1;
+          if (remaining === 0) {
+            addPensionToHistory(data.strategy, data.games);
+            pensionDrawBtn.disabled = false;
+            pensionDrawBtn.textContent = "번호 뽑기";
+          }
+        },
+        300 + i * 150
+      );
+    });
+  } catch (e) {
+    pensionDrawBtn.disabled = false;
+    pensionDrawBtn.textContent = "번호 뽑기";
+    showToast("오류가 발생했어요");
+  }
+}
+
+async function loadPensionStats() {
+  const res = await fetch("/api/pension/stats");
+  const data = await res.json();
+  pensionStatsChart.innerHTML = "";
+  data.groups.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "stat-row";
+    row.innerHTML = `
+      <span>${item.group}조</span>
+      <span class="stat-bar-track"><span class="stat-bar-fill" style="width:${item.score}%"></span></span>
+      <span>${item.score}</span>
+    `;
+    pensionStatsChart.appendChild(row);
+  });
+}
+
+function pensionRank(guessGroup, guessNumber, entryGroup, entryNumber) {
+  if (guessNumber === entryNumber) {
+    return guessGroup === entryGroup ? "1등" : "2등";
+  }
+  let suffix = 0;
+  for (let i = 5; i >= 0; i--) {
+    if (guessNumber[i] === entryNumber[i]) {
+      suffix += 1;
+    } else {
+      break;
+    }
+  }
+  const byLen = { 5: "3등", 4: "4등", 3: "5등", 2: "6등", 1: "7등" };
+  return byLen[suffix] || "낙첨";
+}
+
+function runPensionCheck() {
+  const guessGroup = parseInt(pensionCheckGroupSelect.value, 10);
+  const digitInputs = Array.from(pensionCheckInputsEl.querySelectorAll(".pension-check-digit"));
+  const digits = digitInputs.map((el) => el.value);
+
+  if (digits.some((d) => d === "" || !/^[0-9]$/.test(d))) {
+    showToast("0~9 사이 숫자 6자리를 모두 입력해주세요");
+    return;
+  }
+
+  const guessNumber = digits.join("");
+  const entries = loadPensionHistory();
+
+  if (entries.length === 0) {
+    pensionCheckResults.innerHTML = '<p class="check-empty">대조할 히스토리가 없어요. 먼저 번호를 뽑아보세요.</p>';
+    return;
+  }
+
+  const scored = entries.map((entry) => {
+    const rank = pensionRank(guessGroup, guessNumber, entry.group, entry.number);
+    return { entry, rank, score: PENSION_RANK_SCORE[rank] };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  pensionCheckResults.innerHTML = "";
+  scored.slice(0, 10).forEach(({ entry, rank, score }) => {
+    const row = document.createElement("div");
+    row.className = "check-row";
+
+    const rankEl = document.createElement("span");
+    rankEl.className = `check-rank ${score >= 3 ? "hit" : ""}`;
+    rankEl.textContent = rank;
+
+    const resultEl = document.createElement("span");
+    resultEl.className = "check-balls";
+    resultEl.textContent = `${entry.group}조 ${entry.number}`;
+
+    row.appendChild(rankEl);
+    row.appendChild(resultEl);
+    pensionCheckResults.appendChild(row);
+  });
+}
+
+pensionStrategyBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    pensionStrategyBtns.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    pensionStrategy = btn.dataset.strategy;
+  });
+});
+
+pensionCountBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    pensionCountBtns.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    pensionCount = parseInt(btn.dataset.count, 10);
+  });
+});
+
+pensionClearHistoryBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  localStorage.removeItem(PENSION_HISTORY_KEY);
+  renderPensionHistory();
+});
+
+pensionDrawBtn.addEventListener("click", pensionDraw);
+pensionCheckBtn.addEventListener("click", runPensionCheck);
+
+loadPensionStats();
+renderPensionHistory();
+
+const pensionInitial = buildPensionGameRow(0);
+pensionGamesEl.appendChild(pensionInitial.row);

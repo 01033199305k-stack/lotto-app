@@ -57,6 +57,124 @@ h1 {
   font-size: 0.9rem;
 }
 
+.game-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+}
+
+.game-tab {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.game-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.game-view[hidden] {
+  display: none;
+}
+
+.pension-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.group-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+  color: white;
+  background: #7c3aed;
+  box-shadow: inset 0 -4px 6px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.group-badge .group-label {
+  font-size: 0.55rem;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.group-badge.placeholder {
+  background: var(--border);
+  color: var(--muted);
+}
+
+.group-badge.rolling {
+  animation: roll 0.12s linear infinite;
+  background: var(--muted);
+}
+
+.group-badge.settled {
+  animation: pop 0.3s ease;
+}
+
+.digits {
+  display: flex;
+  gap: 4px;
+}
+
+.digit {
+  width: 32px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: white;
+  background: #4f46e5;
+  box-shadow: inset 0 -4px 6px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.digit.placeholder {
+  background: var(--border);
+  color: var(--muted);
+}
+
+.digit.rolling {
+  animation: roll 0.12s linear infinite;
+  background: var(--muted);
+}
+
+.digit.settled {
+  animation: pop 0.3s ease;
+}
+
+.pension-group-select {
+  width: 60px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
 .strategies {
   display: flex;
   flex-wrap: wrap;
