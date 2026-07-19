@@ -301,20 +301,7 @@ function rankLabel(matchCount, bonusMatch) {
   return "낙첨";
 }
 
-function runCheck() {
-  const inputs = Array.from(checkInputsEl.querySelectorAll(".check-num:not(.check-bonus)"));
-  const bonusInput = checkInputsEl.querySelector(".check-bonus");
-
-  const winNumbers = inputs
-    .map((el) => parseInt(el.value, 10))
-    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 45);
-
-  if (winNumbers.length !== 6 || new Set(winNumbers).size !== 6) {
-    showToast("1~45 사이 서로 다른 6개 번호를 입력해주세요");
-    return;
-  }
-
-  const bonus = parseInt(bonusInput.value, 10);
+function checkAgainst(winNumbers, bonus) {
   const winSet = new Set(winNumbers);
   const entries = loadHistory();
 
@@ -353,6 +340,30 @@ function runCheck() {
     row.appendChild(ballsWrap);
     checkResults.appendChild(row);
   });
+}
+
+function runCheck() {
+  const inputs = Array.from(checkInputsEl.querySelectorAll(".check-num:not(.check-bonus)"));
+  const bonusInput = checkInputsEl.querySelector(".check-bonus");
+
+  const winNumbers = inputs
+    .map((el) => parseInt(el.value, 10))
+    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 45);
+
+  if (winNumbers.length !== 6 || new Set(winNumbers).size !== 6) {
+    showToast("1~45 사이 서로 다른 6개 번호를 입력해주세요");
+    return;
+  }
+
+  checkAgainst(winNumbers, parseInt(bonusInput.value, 10));
+}
+
+function checkAgainstLatestLotto() {
+  if (!latestLottoResult) {
+    showToast("최신 당첨결과를 아직 불러오지 못했어요");
+    return;
+  }
+  checkAgainst(latestLottoResult.numbers, latestLottoResult.bonus);
 }
 
 strategyBtns.forEach((btn) => {
@@ -662,17 +673,7 @@ function pensionRank(guessGroup, guessNumber, entryGroup, entryNumber) {
   return byLen[suffix] || "낙첨";
 }
 
-function runPensionCheck() {
-  const guessGroup = parseInt(pensionCheckGroupSelect.value, 10);
-  const digitInputs = Array.from(pensionCheckInputsEl.querySelectorAll(".pension-check-digit"));
-  const digits = digitInputs.map((el) => el.value);
-
-  if (digits.some((d) => d === "" || !/^[0-9]$/.test(d))) {
-    showToast("0~9 사이 숫자 6자리를 모두 입력해주세요");
-    return;
-  }
-
-  const guessNumber = digits.join("");
+function checkPensionAgainst(guessGroup, guessNumber) {
   const entries = loadPensionHistory();
 
   if (entries.length === 0) {
@@ -704,6 +705,27 @@ function runPensionCheck() {
     row.appendChild(resultEl);
     pensionCheckResults.appendChild(row);
   });
+}
+
+function runPensionCheck() {
+  const guessGroup = parseInt(pensionCheckGroupSelect.value, 10);
+  const digitInputs = Array.from(pensionCheckInputsEl.querySelectorAll(".pension-check-digit"));
+  const digits = digitInputs.map((el) => el.value);
+
+  if (digits.some((d) => d === "" || !/^[0-9]$/.test(d))) {
+    showToast("0~9 사이 숫자 6자리를 모두 입력해주세요");
+    return;
+  }
+
+  checkPensionAgainst(guessGroup, digits.join(""));
+}
+
+function checkAgainstLatestPension() {
+  if (!latestPensionResult) {
+    showToast("최신 당첨결과를 아직 불러오지 못했어요");
+    return;
+  }
+  checkPensionAgainst(latestPensionResult.group, latestPensionResult.number);
 }
 
 pensionStrategyBtns.forEach((btn) => {
@@ -740,6 +762,9 @@ pensionGamesEl.appendChild(pensionInitial.row);
 
 // ---------- 최근 당첨결과 ----------
 
+let latestLottoResult = null;
+let latestPensionResult = null;
+
 async function loadLatestLotto() {
   const card = document.getElementById("lotto-latest");
   try {
@@ -748,6 +773,7 @@ async function loadLatestLotto() {
     if (!data.ok || !data.result) return;
 
     const r = data.result;
+    latestLottoResult = r;
     card.querySelector(".latest-title").textContent = `제${r.round}회 (${r.date}) 당첨번호`;
 
     const ballsWrap = card.querySelector(".latest-balls");
@@ -762,6 +788,8 @@ async function loadLatestLotto() {
     ballsWrap.appendChild(makeBall(r.bonus, `${colorRangeClass(r.bonus)} bonus`));
 
     card.hidden = false;
+    const checkLatestBtn = document.getElementById("check-latest-btn");
+    if (checkLatestBtn) checkLatestBtn.hidden = false;
   } catch (e) {
     // stay hidden if the source is unavailable
   }
@@ -775,6 +803,7 @@ async function loadLatestPension() {
     if (!data.ok || !data.result) return;
 
     const r = data.result;
+    latestPensionResult = r;
     card.querySelector(".latest-title").textContent = `제${r.round}회 (${r.date}) 당첨결과`;
 
     const wrap = card.querySelector(".latest-balls");
@@ -783,6 +812,8 @@ async function loadLatestPension() {
     r.number.split("").forEach((d) => wrap.appendChild(makeDigit(d)));
 
     card.hidden = false;
+    const checkLatestBtn = document.getElementById("pension-check-latest-btn");
+    if (checkLatestBtn) checkLatestBtn.hidden = false;
   } catch (e) {
     // stay hidden if the source is unavailable
   }
@@ -790,6 +821,12 @@ async function loadLatestPension() {
 
 loadLatestLotto();
 loadLatestPension();
+
+const checkLatestBtn = document.getElementById("check-latest-btn");
+if (checkLatestBtn) checkLatestBtn.addEventListener("click", checkAgainstLatestLotto);
+
+const pensionCheckLatestBtn = document.getElementById("pension-check-latest-btn");
+if (pensionCheckLatestBtn) pensionCheckLatestBtn.addEventListener("click", checkAgainstLatestPension);
 
 // ---------- 내 번호 분석하기 ----------
 

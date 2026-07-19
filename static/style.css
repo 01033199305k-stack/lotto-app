@@ -602,6 +602,11 @@ h1 {
   margin-top: 10px;
 }
 
+#check-latest-btn,
+#pension-check-latest-btn {
+  margin-bottom: 14px;
+}
+
 .draw-btn.secondary:hover {
   background: var(--accent);
   color: white;

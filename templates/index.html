@@ -29,6 +29,23 @@
   gtag('js', new Date());
   gtag('config', 'G-8XNLS8PVQQ');
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "로또 번호 추첨기",
+  "url": "https://lotto-app-m0fe.onrender.com/",
+  "description": "로또 6/45와 연금복권720+ 과거 당첨 데이터를 분석해 번호를 추천해주는 무료 웹앱.",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}
+</script>
 </head>
 <body>
   <main class="card">
@@ -90,6 +107,7 @@
       <details class="stats">
         <summary>당첨번호 대조</summary>
         <p class="hint">발표된 당첨번호 6개를 입력하면 히스토리와 몇 개 맞았는지 확인해줘요.</p>
+        <button id="check-latest-btn" class="draw-btn secondary" type="button" hidden>최신 당첨결과로 바로 확인</button>
         <div class="check-inputs" id="check-inputs">
           <input type="number" min="1" max="45" class="check-num">
           <input type="number" min="1" max="45" class="check-num">
@@ -100,7 +118,7 @@
           <span class="check-plus">+ 보너스</span>
           <input type="number" min="1" max="45" class="check-num check-bonus">
         </div>
-        <button id="check-btn" class="draw-btn secondary" type="button">대조하기</button>
+        <button id="check-btn" class="draw-btn secondary" type="button">직접 입력해서 대조하기</button>
         <div id="check-results" class="check-results"></div>
       </details>
 
@@ -174,6 +192,7 @@
       <details class="stats">
         <summary>당첨번호 대조</summary>
         <p class="hint">발표된 조와 번호 6자리를 입력하면 히스토리와 대조해줘요.</p>
+        <button id="pension-check-latest-btn" class="draw-btn secondary" type="button" hidden>최신 당첨결과로 바로 확인</button>
         <div class="check-inputs" id="pension-check-inputs">
           <select id="pension-check-group" class="check-num pension-group-select">
             <option value="1">1조</option>
@@ -189,7 +208,7 @@
           <input type="number" min="0" max="9" class="check-num pension-check-digit">
           <input type="number" min="0" max="9" class="check-num pension-check-digit">
         </div>
-        <button id="pension-check-btn" class="draw-btn secondary" type="button">대조하기</button>
+        <button id="pension-check-btn" class="draw-btn secondary" type="button">직접 입력해서 대조하기</button>
         <div id="pension-check-results" class="check-results"></div>
       </details>
 
