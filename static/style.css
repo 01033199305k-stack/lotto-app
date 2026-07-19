@@ -57,6 +57,56 @@ h1 {
   font-size: 0.9rem;
 }
 
+.latest-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.latest-title {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.latest-balls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.latest-balls .ball,
+.latest-balls .digit {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+}
+
+.latest-balls .group-badge {
+  width: 32px;
+  height: 32px;
+  font-size: 0.7rem;
+}
+
+.latest-balls .group-badge .group-label {
+  font-size: 0.45rem;
+}
+
+.latest-plus {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0 2px;
+}
+
+.latest-balls .ball.bonus {
+  outline: 2px solid #f59e0b;
+  outline-offset: 1px;
+}
+
 .game-tabs {
   display: flex;
   gap: 8px;

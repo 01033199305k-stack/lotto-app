@@ -737,3 +737,56 @@ renderPensionHistory();
 
 const pensionInitial = buildPensionGameRow(0);
 pensionGamesEl.appendChild(pensionInitial.row);
+
+// ---------- 최근 당첨결과 ----------
+
+async function loadLatestLotto() {
+  const card = document.getElementById("lotto-latest");
+  try {
+    const res = await fetch("/api/latest/lotto");
+    const data = await res.json();
+    if (!data.ok || !data.result) return;
+
+    const r = data.result;
+    card.querySelector(".latest-title").textContent = `제${r.round}회 (${r.date}) 당첨번호`;
+
+    const ballsWrap = card.querySelector(".latest-balls");
+    ballsWrap.innerHTML = "";
+    r.numbers.forEach((num) => {
+      ballsWrap.appendChild(makeBall(num, colorRangeClass(num)));
+    });
+    const plus = document.createElement("span");
+    plus.className = "latest-plus";
+    plus.textContent = "+";
+    ballsWrap.appendChild(plus);
+    ballsWrap.appendChild(makeBall(r.bonus, `${colorRangeClass(r.bonus)} bonus`));
+
+    card.hidden = false;
+  } catch (e) {
+    // stay hidden if the source is unavailable
+  }
+}
+
+async function loadLatestPension() {
+  const card = document.getElementById("pension-latest");
+  try {
+    const res = await fetch("/api/latest/pension");
+    const data = await res.json();
+    if (!data.ok || !data.result) return;
+
+    const r = data.result;
+    card.querySelector(".latest-title").textContent = `제${r.round}회 (${r.date}) 당첨결과`;
+
+    const wrap = card.querySelector(".latest-balls");
+    wrap.innerHTML = "";
+    wrap.appendChild(makeGroupBadge(r.group));
+    r.number.split("").forEach((d) => wrap.appendChild(makeDigit(d)));
+
+    card.hidden = false;
+  } catch (e) {
+    // stay hidden if the source is unavailable
+  }
+}
+
+loadLatestLotto();
+loadLatestPension();

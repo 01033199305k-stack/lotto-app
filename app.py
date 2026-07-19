@@ -2,6 +2,10 @@ import csv
 import json
 import os
 import random
+import re
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 from flask import Flask, Response, jsonify, render_template, request
@@ -151,6 +155,92 @@ def pension_game_stats(group, number):
     }
 
 
+DH_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+LATEST_CACHE_TTL = 1800  # seconds
+
+_latest_cache = {"lotto": None, "pension": None}
+_latest_cache_ts = {"lotto": 0.0, "pension": 0.0}
+
+
+def format_dh_date(yyyymmdd):
+    if not yyyymmdd or len(yyyymmdd) != 8:
+        return yyyymmdd
+    return f"{yyyymmdd[0:4]}.{yyyymmdd[4:6]}.{yyyymmdd[6:8]}"
+
+
+def _dh_get(url, referer):
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": DH_USER_AGENT,
+            "Referer": referer,
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=8) as resp:
+        return resp.read().decode("utf-8")
+
+
+def fetch_latest_lotto():
+    result_page = "https://www.dhlottery.co.kr/lt645/result"
+    html = _dh_get(result_page, result_page)
+
+    match = re.search(r'id="opt_val" value="(\d+)"', html)
+    if not match:
+        return None
+    round_no = match.group(1)
+
+    api_url = f"https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do?srchDir=center&srchLtEpsd={round_no}"
+    payload = json.loads(_dh_get(api_url, result_page))
+    items = payload.get("data", {}).get("list", [])
+    if not items:
+        return None
+
+    item = items[0]
+    numbers = sorted(item[f"tm{i}WnNo"] for i in range(1, 7))
+    return {
+        "round": item["ltEpsd"],
+        "date": format_dh_date(item["ltRflYmd"]),
+        "numbers": numbers,
+        "bonus": item["bnsWnNo"],
+    }
+
+
+def fetch_latest_pension():
+    result_page = "https://www.dhlottery.co.kr/pt720/result"
+    api_url = "https://www.dhlottery.co.kr/pt720/selectPstPt720WnList.do"
+    payload = json.loads(_dh_get(api_url, result_page))
+    rows = payload.get("data", {}).get("result", [])
+    if not rows:
+        return None
+
+    latest = max(rows, key=lambda r: r["psltEpsd"])
+    return {
+        "round": latest["psltEpsd"],
+        "date": format_dh_date(latest["psltRflYmd"]),
+        "group": int(latest["wnBndNo"]),
+        "number": latest["wnRnkVl"].zfill(6),
+        "bonus": latest["bnsRnkVl"].zfill(6),
+    }
+
+
+def get_latest(game):
+    now = time.time()
+    if _latest_cache[game] is not None and now - _latest_cache_ts[game] < LATEST_CACHE_TTL:
+        return _latest_cache[game]
+
+    try:
+        data = fetch_latest_lotto() if game == "lotto" else fetch_latest_pension()
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError):
+        data = None
+
+    if data is not None:
+        _latest_cache[game] = data
+        _latest_cache_ts[game] = now
+
+    return _latest_cache[game]
+
+
 def parse_exclude(raw):
     excluded = set()
     if not raw:
@@ -275,6 +365,18 @@ def api_pension_stats():
     group_scores = _pension_weights["group"]["reliability"]
     top_groups = sorted(group_scores.items(), key=lambda x: x[1], reverse=True)
     return jsonify({"groups": [{"group": g, "score": round(s, 1)} for g, s in top_groups]})
+
+
+@app.route("/api/latest/lotto")
+def api_latest_lotto():
+    result = get_latest("lotto")
+    return jsonify({"ok": result is not None, "result": result})
+
+
+@app.route("/api/latest/pension")
+def api_latest_pension():
+    result = get_latest("pension")
+    return jsonify({"ok": result is not None, "result": result})
 
 
 _combos_by_type, _number_scores, _number_freq, _mixed_weights = load_data()
