@@ -312,6 +312,11 @@ def privacy():
     return render_template("privacy.html")
 
 
+@app.route("/guide")
+def guide():
+    return render_template("guide.html")
+
+
 @app.route("/robots.txt")
 def robots():
     body = "User-agent: *\nAllow: /\nSitemap: https://lotto-app-m0fe.onrender.com/sitemap.xml\n"
@@ -321,7 +326,7 @@ def robots():
 @app.route("/sitemap.xml")
 def sitemap():
     base = "https://lotto-app-m0fe.onrender.com"
-    urls = [f"{base}/", f"{base}/privacy"]
+    urls = [f"{base}/", f"{base}/guide", f"{base}/privacy"]
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for url in urls:
         body += f"  <url><loc>{url}</loc></url>\n"
