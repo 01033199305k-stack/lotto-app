@@ -373,10 +373,20 @@ def robots():
 @app.route("/sitemap.xml")
 def sitemap():
     base = "https://lotto-app-m0fe.onrender.com"
-    urls = [f"{base}/", f"{base}/guide", f"{base}/privacy"]
+    # /privacy is intentionally excluded: it's marked noindex,follow in its
+    # own meta tag, and Search Console flags sitemap entries that contradict
+    # a page's own indexing directive as an error.
+    pages = [
+        {"loc": f"{base}/", "changefreq": "daily", "priority": "1.0"},
+        {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.6"},
+    ]
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for url in urls:
-        body += f"  <url><loc>{url}</loc></url>\n"
+    for page in pages:
+        body += (
+            f"  <url><loc>{page['loc']}</loc>"
+            f"<changefreq>{page['changefreq']}</changefreq>"
+            f"<priority>{page['priority']}</priority></url>\n"
+        )
     body += "</urlset>\n"
     return Response(body, mimetype="application/xml")
 
