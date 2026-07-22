@@ -393,6 +393,11 @@ def stats_page():
     )
 
 
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html"), 404
+
+
 @app.route("/ads.txt")
 def ads_txt():
     body = "google.com, pub-9852386681125742, DIRECT, f08c47fec0942fa0\n"
