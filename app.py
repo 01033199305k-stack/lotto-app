@@ -349,6 +349,13 @@ def analyze_numbers(numbers):
     }
 
 
+@app.after_request
+def add_static_cache_headers(response):
+    if request.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=604800"
+    return response
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
