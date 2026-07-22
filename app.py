@@ -393,6 +393,12 @@ def stats_page():
     )
 
 
+@app.route("/ads.txt")
+def ads_txt():
+    body = "google.com, pub-9852386681125742, DIRECT, f08c47fec0942fa0\n"
+    return Response(body, mimetype="text/plain")
+
+
 @app.route("/robots.txt")
 def robots():
     body = "User-agent: *\nAllow: /\nSitemap: https://lotto-app-m0fe.onrender.com/sitemap.xml\n"
