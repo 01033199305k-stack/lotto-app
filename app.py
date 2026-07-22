@@ -417,6 +417,11 @@ def robots():
     return Response(body, mimetype="text/plain")
 
 
+def template_lastmod(template_name):
+    path = Path(__file__).resolve().parent / "templates" / template_name
+    return time.strftime("%Y-%m-%d", time.gmtime(path.stat().st_mtime))
+
+
 @app.route("/sitemap.xml")
 def sitemap():
     base = "https://lotto-app-m0fe.onrender.com"
@@ -424,14 +429,15 @@ def sitemap():
     # own meta tag, and Search Console flags sitemap entries that contradict
     # a page's own indexing directive as an error.
     pages = [
-        {"loc": f"{base}/", "changefreq": "daily", "priority": "1.0"},
-        {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.6"},
-        {"loc": f"{base}/stats", "changefreq": "weekly", "priority": "0.7"},
+        {"loc": f"{base}/", "changefreq": "daily", "priority": "1.0", "template": "index.html"},
+        {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.6", "template": "guide.html"},
+        {"loc": f"{base}/stats", "changefreq": "weekly", "priority": "0.7", "template": "stats.html"},
     ]
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for page in pages:
         body += (
             f"  <url><loc>{page['loc']}</loc>"
+            f"<lastmod>{template_lastmod(page['template'])}</lastmod>"
             f"<changefreq>{page['changefreq']}</changefreq>"
             f"<priority>{page['priority']}</priority></url>\n"
         )
