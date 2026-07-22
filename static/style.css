@@ -711,3 +711,44 @@ h1 {
   outline: 2px solid #ef4444;
   outline-offset: 1px;
 }
+
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.install-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.install-banner-actions button {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+}
+
+#install-btn {
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+#install-dismiss {
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 8px;
+}

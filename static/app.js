@@ -966,3 +966,36 @@ function renderPensionAnalyze(r) {
 }
 
 pensionAnalyzeBtn.addEventListener("click", runPensionAnalyze);
+
+// ---------- 홈 화면에 추가 (PWA 설치 유도) ----------
+
+const INSTALL_DISMISS_KEY = "pwa_install_dismissed";
+const installBanner = document.getElementById("install-banner");
+const installBtn = document.getElementById("install-btn");
+const installDismiss = document.getElementById("install-dismiss");
+let deferredInstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  if (localStorage.getItem(INSTALL_DISMISS_KEY)) return;
+  deferredInstallPrompt = e;
+  if (installBanner) installBanner.hidden = false;
+});
+
+installBtn?.addEventListener("click", async () => {
+  if (!deferredInstallPrompt) return;
+  installBanner.hidden = true;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+});
+
+installDismiss?.addEventListener("click", () => {
+  installBanner.hidden = true;
+  localStorage.setItem(INSTALL_DISMISS_KEY, "1");
+});
+
+window.addEventListener("appinstalled", () => {
+  if (installBanner) installBanner.hidden = true;
+  deferredInstallPrompt = null;
+});
