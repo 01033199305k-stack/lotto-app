@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로또 번호별 출현 빈도 통계 | 로또 6/45 · 연금복권720+</title>
+<meta name="description" content="로또 6/45 1~45번 전체 신뢰도·출현 빈도 순위와 연금복권720+ 조별 신뢰도 순위를 과거 당첨 데이터 기준으로 정리했습니다.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="canonical" href="https://lotto-app-m0fe.onrender.com/stats">
+<meta property="og:type" content="website">
+<meta property="og:title" content="로또 번호별 출현 빈도 통계">
+<meta property="og:description" content="로또 6/45 전체 번호 신뢰도 순위, 연금복권720+ 조별 순위를 한눈에 확인하세요.">
+<meta property="og:url" content="https://lotto-app-m0fe.onrender.com/stats">
+<meta property="og:image" content="https://lotto-app-m0fe.onrender.com/static/icons/icon-512.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="로또 번호별 출현 빈도 통계">
+<meta name="twitter:description" content="로또 6/45 전체 번호 순위를 확인하세요">
+<meta name="twitter:image" content="https://lotto-app-m0fe.onrender.com/static/icons/icon-512.png">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9852386681125742" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8XNLS8PVQQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8XNLS8PVQQ');
+</script>
+</head>
+<body>
+  <main class="card" style="text-align:left; max-width:640px;">
+    <h1 style="font-size:1.3rem; text-align:center;">번호별 출현 빈도 통계</h1>
+    <p class="subtitle" style="text-align:center;">과거 당첨 데이터를 분석한 신뢰도 점수 전체 순위예요</p>
+
+    <h2 style="font-size:1.05rem;">로또 6/45 — 번호별 신뢰도 순위</h2>
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border); color:var(--muted); text-align:left;">
+            <th style="padding:6px 8px;">순위</th>
+            <th style="padding:6px 8px;">번호</th>
+            <th style="padding:6px 8px;">신뢰도 점수</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in lotto_rows %}
+          <tr style="border-bottom:1px dashed var(--border);">
+            <td style="padding:6px 8px; color:var(--muted);">{{ loop.index }}</td>
+            <td style="padding:6px 8px; font-weight:600;">{{ row.number }}</td>
+            <td style="padding:6px 8px;">
+              <div class="stat-row" style="grid-template-columns:1fr 40px;">
+                <span class="stat-bar-track"><span class="stat-bar-fill" style="width:{{ row.score }}%"></span></span>
+                <span>{{ row.score }}</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="font-size:1.05rem; margin-top:28px;">연금복권720+ — 조별 신뢰도 순위</h2>
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border); color:var(--muted); text-align:left;">
+            <th style="padding:6px 8px;">순위</th>
+            <th style="padding:6px 8px;">조</th>
+            <th style="padding:6px 8px;">신뢰도 점수</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in pension_group_rows %}
+          <tr style="border-bottom:1px dashed var(--border);">
+            <td style="padding:6px 8px; color:var(--muted);">{{ loop.index }}</td>
+            <td style="padding:6px 8px; font-weight:600;">{{ row.group }}조</td>
+            <td style="padding:6px 8px;">
+              <div class="stat-row" style="grid-template-columns:1fr 40px;">
+                <span class="stat-bar-track"><span class="stat-bar-fill" style="width:{{ row.score }}%"></span></span>
+                <span>{{ row.score }}</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="disclaimer" style="margin-top:24px;">
+      ⚠️ 신뢰도 점수는 과거 동반출현 데이터를 분석한 통계적 지표일 뿐, 다음 회차 당첨 확률과는 무관합니다.
+      로또·연금복권 추첨은 매 회차 완전히 독립적인 무작위 사건입니다.
+    </p>
+
+    <p style="margin-top:20px; text-align:center;"><a href="{{ url_for('index') }}">← 번호 뽑으러 가기</a></p>
+  </main>
+</body>
+</html>

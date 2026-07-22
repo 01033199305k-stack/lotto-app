@@ -364,6 +364,35 @@ def guide():
     return render_template("guide.html")
 
 
+@app.route("/stats")
+def stats_page():
+    lotto_rows = sorted(
+        (
+            {
+                "number": n,
+                "score": round(_number_scores.get(n, 0), 1),
+                "freq": round(_number_freq.get(n, 0), 0),
+            }
+            for n in UNIVERSE
+        ),
+        key=lambda r: r["score"],
+        reverse=True,
+    )
+
+    pension_group_rows = sorted(
+        (
+            {"group": g, "score": round(_pension_weights["group"]["reliability"].get(g, 0), 1)}
+            for g in PENSION_GROUPS
+        ),
+        key=lambda r: r["score"],
+        reverse=True,
+    )
+
+    return render_template(
+        "stats.html", lotto_rows=lotto_rows, pension_group_rows=pension_group_rows
+    )
+
+
 @app.route("/robots.txt")
 def robots():
     body = "User-agent: *\nAllow: /\nSitemap: https://lotto-app-m0fe.onrender.com/sitemap.xml\n"
@@ -379,6 +408,7 @@ def sitemap():
     pages = [
         {"loc": f"{base}/", "changefreq": "daily", "priority": "1.0"},
         {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.6"},
+        {"loc": f"{base}/stats", "changefreq": "weekly", "priority": "0.7"},
     ]
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for page in pages:
