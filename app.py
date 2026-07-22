@@ -353,7 +353,15 @@ def analyze_numbers(numbers):
 def add_static_cache_headers(response):
     if request.path.startswith("/static/"):
         response.headers["Cache-Control"] = "public, max-age=604800"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return app.send_static_file("icons/icon-192.png")
 
 
 @app.route("/")
