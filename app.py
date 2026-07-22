@@ -9,8 +9,10 @@ import urllib.request
 from pathlib import Path
 
 from flask import Flask, Response, jsonify, render_template, request
+from flask_compress import Compress
 
 app = Flask(__name__)
+Compress(app)
 
 CSV_PATH = Path(__file__).resolve().parent / "동반출현_전체데이터.csv"
 PENSION_PATH = Path(__file__).resolve().parent / "연금복권_전체데이터.json"
@@ -356,6 +358,7 @@ def add_static_cache_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
 
