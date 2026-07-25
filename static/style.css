@@ -55,6 +55,15 @@ h1 {
   margin: 0 0 24px;
   color: var(--muted);
   font-size: 0.9rem;
+  line-height: 1.55;
+  /* Korean has no spaces inside a word, so the default break-anywhere wrap
+     splits words mid-syllable (분/석한). keep-all wraps at spaces instead. */
+  word-break: keep-all;
+}
+
+.subtitle-note {
+  font-size: 0.82rem;
+  opacity: 0.85;
 }
 
 .latest-card {
@@ -458,12 +467,14 @@ h1 {
   background: var(--accent);
 }
 
+/* No text-align here on purpose: it inherits the parent's. The home card is
+   centered, /stats is a left-aligned reading column, and both want their
+   disclaimer to match. */
 .disclaimer {
   margin: 20px 0 0;
   font-size: 0.75rem;
   line-height: 1.6;
   color: var(--muted);
-  text-align: left;
   word-break: keep-all;
 }
 
