@@ -712,13 +712,20 @@ h1 {
   outline-offset: 1px;
 }
 
-/* Ad container. No min-height on purpose: AdSense sets display:none on the
-   <ins> when a slot goes unfilled, and a reserved height would leave a
-   permanent blank gap in the layout on every unfilled impression. */
 .ad-slot {
   margin: 18px 0;
   text-align: center;
   overflow: hidden;
+}
+
+/* AdSense stamps an inline height on the <ins> as soon as a responsive unit
+   initializes, and does NOT remove it when the slot comes back without an ad —
+   the unit just sits there as an empty white block. Collapsing on the
+   data-ad-status attribute is Google's documented fix. Don't pre-hide the
+   <ins> instead: a unit that starts at display:none reports zero width and
+   AdSense will refuse to fill it at all. */
+ins.adsbygoogle[data-ad-status="unfilled"] {
+  display: none !important;
 }
 
 .install-banner {
