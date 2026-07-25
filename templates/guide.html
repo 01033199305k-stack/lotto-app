@@ -18,7 +18,7 @@
 <meta name="twitter:title" content="로또 6/45 · 연금복권720+ 상식 가이드">
 <meta name="twitter:description" content="당첨 확률, 세금, 등수별 조건까지 정리한 상식 가이드">
 <meta name="twitter:image" content="https://lotto-app-m0fe.onrender.com/static/icons/icon-512.png">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ asset('style.css') }}">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9852386681125742" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-8XNLS8PVQQ"></script>
 <script>
@@ -179,6 +179,6 @@
       <a href="{{ url_for('stats_page') }}">번호별 통계 보기</a>
     </p>
   </main>
-  <script src="{{ url_for('static', filename='ads.js') }}"></script>
+  <script src="{{ asset('ads.js') }}"></script>
 </body>
 </html>

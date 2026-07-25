@@ -8,7 +8,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from flask import Flask, Response, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request, url_for
 from flask_compress import Compress
 
 app = Flask(__name__)
@@ -349,6 +349,26 @@ def analyze_numbers(numbers):
         "avgScore": avg_score,
         "bestMatch": best_match,
     }
+
+
+@app.context_processor
+def inject_asset_helper():
+    """Static URLs carry a mtime stamp so the year-long cache is safe.
+
+    Without this, the max-age below means an edited style.css or app.js keeps
+    serving stale to anyone who visited in the last week. Changing the file
+    changes the query string, which makes it a different URL to every cache.
+    """
+
+    def asset(filename):
+        url = url_for("static", filename=filename)
+        try:
+            stamp = int((Path(app.static_folder) / filename).stat().st_mtime)
+        except OSError:
+            return url
+        return f"{url}?v={stamp}"
+
+    return {"asset": asset}
 
 
 @app.after_request
