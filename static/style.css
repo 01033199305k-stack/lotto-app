@@ -712,6 +712,15 @@ h1 {
   outline-offset: 1px;
 }
 
+/* Ad container. No min-height on purpose: AdSense sets display:none on the
+   <ins> when a slot goes unfilled, and a reserved height would leave a
+   permanent blank gap in the layout on every unfilled impression. */
+.ad-slot {
+  margin: 18px 0;
+  text-align: center;
+  overflow: hidden;
+}
+
 .install-banner {
   display: flex;
   align-items: center;
