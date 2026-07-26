@@ -409,8 +409,12 @@ def guide_article(slug):
     article = BY_SLUG.get(slug)
     if article is None:
         abort(404)
-    others = [a for a in ARTICLES if a["slug"] != slug]
-    return render_template("article.html", article=article, others=others)
+
+    # 글이 늘어도 하단 목록은 4개만. 시작 위치를 글마다 다르게 잡아 순환시키므로
+    # 전부 나열하지 않으면서도 모든 글이 어딘가에서는 링크된다.
+    i = ARTICLES.index(article)
+    rotated = ARTICLES[i + 1 :] + ARTICLES[:i]
+    return render_template("article.html", article=article, others=rotated[:4])
 
 
 @app.route("/stats")
