@@ -173,6 +173,18 @@
       겪고 계시다면 한국도박문제예방치유원(1336)에서 상담받으실 수 있습니다.
     </p>
 
+    <section class="related">
+      <h2>주제별로 더 자세히</h2>
+      <ul class="article-list">
+        {% for article in articles %}
+        <li>
+          <a href="{{ url_for('guide_article', slug=article.slug) }}">{{ article.title }}</a>
+          <span>{{ article.summary }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+
     <p style="margin-top:24px;">
       <a href="{{ url_for('index') }}">← 번호 뽑으러 가기</a>
       <span aria-hidden="true"> · </span>

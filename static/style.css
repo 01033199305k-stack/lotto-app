@@ -729,6 +729,147 @@ h1 {
   overflow: hidden;
 }
 
+/* ---------- 가이드 문서 ---------- */
+
+.article {
+  text-align: left;
+}
+
+.breadcrumb {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.breadcrumb a {
+  color: var(--muted);
+}
+
+.article h1 {
+  font-size: 1.45rem;
+  line-height: 1.35;
+  word-break: keep-all;
+  margin-bottom: 10px;
+}
+
+.article-lead {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.6;
+  word-break: keep-all;
+  margin: 0 0 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article h2 {
+  font-size: 1.08rem;
+  margin: 30px 0 10px;
+  word-break: keep-all;
+}
+
+.article p,
+.article li {
+  font-size: 0.92rem;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.article ul {
+  padding-left: 20px;
+}
+
+.article li {
+  margin-bottom: 6px;
+}
+
+.article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  margin: 16px 0;
+}
+
+.article th,
+.article td {
+  padding: 9px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  word-break: keep-all;
+}
+
+.article th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.article .formula {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+}
+
+.article .note {
+  margin-top: 28px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.related {
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.related h2 {
+  font-size: 1rem;
+  margin: 0 0 14px;
+}
+
+.article-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.article-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+}
+
+.article-list a {
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  word-break: keep-all;
+}
+
+.article-list a:hover {
+  text-decoration: underline;
+}
+
+.article-list span {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
 /* AdSense stamps an inline height on the <ins> as soon as a responsive unit
    initializes, and does NOT remove it when the slot comes back without an ad —
    the unit just sits there as an empty white block. Collapsing on the

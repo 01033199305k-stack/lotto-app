@@ -8,8 +8,10 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from flask import Flask, Response, jsonify, render_template, request, url_for
+from flask import Flask, Response, abort, jsonify, render_template, request, url_for
 from flask_compress import Compress
+
+from articles import ARTICLES, BY_SLUG
 
 app = Flask(__name__)
 Compress(app)
@@ -399,7 +401,16 @@ def privacy():
 
 @app.route("/guide")
 def guide():
-    return render_template("guide.html")
+    return render_template("guide.html", articles=ARTICLES)
+
+
+@app.route("/guide/<slug>")
+def guide_article(slug):
+    article = BY_SLUG.get(slug)
+    if article is None:
+        abort(404)
+    others = [a for a in ARTICLES if a["slug"] != slug]
+    return render_template("article.html", article=article, others=others)
 
 
 @app.route("/stats")
@@ -453,6 +464,11 @@ def template_lastmod(template_name):
     return time.strftime("%Y-%m-%d", time.gmtime(path.stat().st_mtime))
 
 
+def source_lastmod(filename):
+    path = Path(__file__).resolve().parent / filename
+    return time.strftime("%Y-%m-%d", time.gmtime(path.stat().st_mtime))
+
+
 @app.route("/sitemap.xml")
 def sitemap():
     base = "https://lotto-app-m0fe.onrender.com"
@@ -461,14 +477,27 @@ def sitemap():
     # a page's own indexing directive as an error.
     pages = [
         {"loc": f"{base}/", "changefreq": "daily", "priority": "1.0", "template": "index.html"},
-        {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.6", "template": "guide.html"},
+        {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.7", "template": "guide.html"},
         {"loc": f"{base}/stats", "changefreq": "weekly", "priority": "0.7", "template": "stats.html"},
     ]
+    # 가이드 글은 내용이 바뀔 때만 lastmod가 움직이도록 articles.py 기준으로 잡는다.
+    for article in ARTICLES:
+        pages.append(
+            {
+                "loc": f"{base}/guide/{article['slug']}",
+                "changefreq": "monthly",
+                "priority": "0.6",
+                "template": None,
+            }
+        )
+
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for page in pages:
+        template = page["template"]
+        lastmod = template_lastmod(template) if template else source_lastmod("articles.py")
         body += (
             f"  <url><loc>{page['loc']}</loc>"
-            f"<lastmod>{template_lastmod(page['template'])}</lastmod>"
+            f"<lastmod>{lastmod}</lastmod>"
             f"<changefreq>{page['changefreq']}</changefreq>"
             f"<priority>{page['priority']}</priority></url>\n"
         )
