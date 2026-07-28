@@ -66,6 +66,43 @@ h1 {
   opacity: 0.85;
 }
 
+.feature-pills {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.feature-pills li {
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  word-break: keep-all;
+}
+
+.feature-pills li strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Saving is the one action people miss, so it reads as the primary
+   row action while copy/share stay quiet. */
+.save-btn {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.save-btn.saved {
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .latest-card {
   border: 1px solid var(--border);
   border-radius: 14px;

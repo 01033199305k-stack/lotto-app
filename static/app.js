@@ -76,7 +76,7 @@ function buildGameRow(index) {
   top.innerHTML = `<span class="game-label">GAME ${index + 1}</span>`;
 
   const saveBtn = document.createElement("button");
-  saveBtn.className = "copy-btn";
+  saveBtn.className = "copy-btn save-btn";
   saveBtn.type = "button";
   saveBtn.textContent = "저장";
   top.appendChild(saveBtn);
@@ -219,7 +219,9 @@ async function draw() {
     let remaining = data.games.length;
     data.games.forEach((game, i) => {
       rows[i].copyBtn.addEventListener("click", () => copyGame(game.numbers));
-      rows[i].saveBtn.addEventListener("click", () => savePick("lotto", { numbers: game.numbers }));
+      rows[i].saveBtn.addEventListener("click", () =>
+        savePick("lotto", { numbers: game.numbers }, rows[i].saveBtn)
+      );
       if (rows[i].shareBtn) {
         rows[i].shareBtn.addEventListener("click", () => shareText(game.numbers.join(", ")));
       }
@@ -473,7 +475,7 @@ function buildPensionGameRow(index) {
   top.innerHTML = `<span class="game-label">GAME ${index + 1}</span>`;
 
   const saveBtn = document.createElement("button");
-  saveBtn.className = "copy-btn";
+  saveBtn.className = "copy-btn save-btn";
   saveBtn.type = "button";
   saveBtn.textContent = "저장";
   top.appendChild(saveBtn);
@@ -628,7 +630,7 @@ async function pensionDraw() {
     data.games.forEach((game, i) => {
       rows[i].copyBtn.addEventListener("click", () => copyPension(game.group, game.number));
       rows[i].saveBtn.addEventListener("click", () =>
-        savePick("pension", { group: game.group, number: game.number })
+        savePick("pension", { group: game.group, number: game.number }, rows[i].saveBtn)
       );
       if (rows[i].shareBtn) {
         rows[i].shareBtn.addEventListener("click", () => shareText(`${game.group}조 ${game.number}`));
@@ -1044,7 +1046,14 @@ function targetRound(game) {
   return latest ? latest.round + 1 : null;
 }
 
-function savePick(game, payload) {
+function markSaved(btn) {
+  if (!btn) return;
+  btn.textContent = "저장됨 ✓";
+  btn.classList.add("saved");
+  btn.disabled = true;
+}
+
+function savePick(game, payload, btn) {
   const round = targetRound(game);
   if (!round) {
     showToast("회차 정보를 불러오지 못했어요");
@@ -1061,12 +1070,14 @@ function savePick(game, payload) {
 
   if (dup) {
     showToast(`${round}회차에 이미 저장된 번호예요`);
+    markSaved(btn);
     return;
   }
 
   entries.unshift({ ...payload, round, ts: Date.now() });
   writeSaved(game, entries);
-  showToast(`${round}회차로 저장했어요`);
+  showToast(`${round}회차로 저장했어요. 추첨 후 등수를 자동으로 알려드려요`);
+  markSaved(btn);
   renderSaved(game);
 }
 
