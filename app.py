@@ -263,6 +263,66 @@ def get_latest(game):
     return _latest_cache[game]
 
 
+# Past draw results never change, so they can be cached indefinitely.
+_round_cache = {"lotto": {}, "pension": {}}
+
+
+def fetch_lotto_round(round_no):
+    result_page = "https://www.dhlottery.co.kr/lt645/result"
+    api_url = (
+        "https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do"
+        f"?srchDir=center&srchLtEpsd={round_no}"
+    )
+    payload = json.loads(_dh_get(api_url, result_page))
+    for item in payload.get("data", {}).get("list", []):
+        if item.get("ltEpsd") != round_no:
+            continue
+        return {
+            "round": item["ltEpsd"],
+            "date": format_dh_date(item["ltRflYmd"]),
+            "numbers": sorted(item[f"tm{i}WnNo"] for i in range(1, 7)),
+            "bonus": item["bnsWnNo"],
+        }
+    return None
+
+
+def fetch_pension_round(round_no):
+    result_page = "https://www.dhlottery.co.kr/pt720/result"
+    api_url = "https://www.dhlottery.co.kr/pt720/selectPstPt720WnList.do"
+    payload = json.loads(_dh_get(api_url, result_page))
+    for row in payload.get("data", {}).get("result", []):
+        if row.get("psltEpsd") != round_no:
+            continue
+        return {
+            "round": row["psltEpsd"],
+            "date": format_dh_date(row["psltRflYmd"]),
+            "group": int(row["wnBndNo"]),
+            "number": row["wnRnkVl"].zfill(6),
+            "bonus": row["bnsRnkVl"].zfill(6),
+        }
+    return None
+
+
+def get_round(game, round_no):
+    cached = _round_cache[game].get(round_no)
+    if cached is not None:
+        return cached
+
+    latest = get_latest(game)
+    if latest is not None and round_no == latest["round"]:
+        return latest
+
+    try:
+        data = fetch_lotto_round(round_no) if game == "lotto" else fetch_pension_round(round_no)
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError):
+        return None
+
+    if data is not None:
+        _round_cache[game][round_no] = data
+
+    return data
+
+
 def parse_exclude(raw):
     excluded = set()
     if not raw:
@@ -556,6 +616,15 @@ def api_latest_lotto():
 @app.route("/api/latest/pension")
 def api_latest_pension():
     result = get_latest("pension")
+    return jsonify({"ok": result is not None, "result": result})
+
+
+@app.route("/api/result/<game>/<int:round_no>")
+def api_result(game, round_no):
+    if game not in ("lotto", "pension") or round_no < 1:
+        return jsonify({"ok": False, "result": None})
+
+    result = get_round(game, round_no)
     return jsonify({"ok": result is not None, "result": result})
 
 

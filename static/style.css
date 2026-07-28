@@ -519,6 +519,99 @@ h1 {
   color: var(--muted);
 }
 
+.saved-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saved-empty {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.saved-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.saved-item.win {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.07);
+}
+
+.saved-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.saved-round {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.saved-status {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.saved-status.pending {
+  color: var(--accent);
+}
+
+.saved-status.hit {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.saved-remove {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.saved-remove:hover {
+  color: #ef4444;
+}
+
+.saved-balls {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.saved-balls .ball,
+.saved-balls .digit {
+  width: 30px;
+  height: 30px;
+  font-size: 0.75rem;
+}
+
+.saved-balls .group-badge {
+  width: 30px;
+  height: 30px;
+  font-size: 0.68rem;
+}
+
+.saved-balls .group-badge .group-label {
+  font-size: 0.42rem;
+}
+
+.saved-balls .ball.matched {
+  outline: 2px solid #f59e0b;
+  outline-offset: 1px;
+}
+
 .history-item {
   display: flex;
   align-items: center;

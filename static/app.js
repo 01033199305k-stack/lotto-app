@@ -75,6 +75,12 @@ function buildGameRow(index) {
   top.className = "game-row-top";
   top.innerHTML = `<span class="game-label">GAME ${index + 1}</span>`;
 
+  const saveBtn = document.createElement("button");
+  saveBtn.className = "copy-btn";
+  saveBtn.type = "button";
+  saveBtn.textContent = "저장";
+  top.appendChild(saveBtn);
+
   const copyBtn = document.createElement("button");
   copyBtn.className = "copy-btn";
   copyBtn.type = "button";
@@ -103,7 +109,7 @@ function buildGameRow(index) {
   row.appendChild(balls);
   row.appendChild(meta);
 
-  return { row, balls, meta, copyBtn, shareBtn };
+  return { row, balls, meta, copyBtn, shareBtn, saveBtn };
 }
 
 function animateGame(ballsEl, finalNumbers, onDone, delay) {
@@ -213,6 +219,7 @@ async function draw() {
     let remaining = data.games.length;
     data.games.forEach((game, i) => {
       rows[i].copyBtn.addEventListener("click", () => copyGame(game.numbers));
+      rows[i].saveBtn.addEventListener("click", () => savePick("lotto", { numbers: game.numbers }));
       if (rows[i].shareBtn) {
         rows[i].shareBtn.addEventListener("click", () => shareText(game.numbers.join(", ")));
       }
@@ -465,6 +472,12 @@ function buildPensionGameRow(index) {
   top.className = "game-row-top";
   top.innerHTML = `<span class="game-label">GAME ${index + 1}</span>`;
 
+  const saveBtn = document.createElement("button");
+  saveBtn.className = "copy-btn";
+  saveBtn.type = "button";
+  saveBtn.textContent = "저장";
+  top.appendChild(saveBtn);
+
   const copyBtn = document.createElement("button");
   copyBtn.className = "copy-btn";
   copyBtn.type = "button";
@@ -500,7 +513,7 @@ function buildPensionGameRow(index) {
   row.appendChild(result);
   row.appendChild(meta);
 
-  return { row, groupBadge, digitsEl, meta, copyBtn, shareBtn };
+  return { row, groupBadge, digitsEl, meta, copyBtn, shareBtn, saveBtn };
 }
 
 function animatePension(groupBadgeEl, digitsEl, finalGroup, finalNumber, onDone, delay) {
@@ -614,6 +627,9 @@ async function pensionDraw() {
     let remaining = data.games.length;
     data.games.forEach((game, i) => {
       rows[i].copyBtn.addEventListener("click", () => copyPension(game.group, game.number));
+      rows[i].saveBtn.addEventListener("click", () =>
+        savePick("pension", { group: game.group, number: game.number })
+      );
       if (rows[i].shareBtn) {
         rows[i].shareBtn.addEventListener("click", () => shareText(`${game.group}조 ${game.number}`));
       }
@@ -999,3 +1015,176 @@ window.addEventListener("appinstalled", () => {
   if (installBanner) installBanner.hidden = true;
   deferredInstallPrompt = null;
 });
+
+// ---------- 내가 저장한 번호 (회차별 자동 당첨확인) ----------
+
+const SAVED_KEY = { lotto: "lotto_saved_picks", pension: "pension_saved_picks" };
+const SAVED_LIMIT = 50;
+
+const savedListEl = {
+  lotto: document.getElementById("saved-list"),
+  pension: document.getElementById("pension-saved-list"),
+};
+
+function loadSaved(game) {
+  try {
+    return JSON.parse(localStorage.getItem(SAVED_KEY[game])) || [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSaved(game, entries) {
+  localStorage.setItem(SAVED_KEY[game], JSON.stringify(entries.slice(0, SAVED_LIMIT)));
+}
+
+// The round a pick is *for* is the one after whatever has already been drawn.
+function targetRound(game) {
+  const latest = game === "lotto" ? latestLottoResult : latestPensionResult;
+  return latest ? latest.round + 1 : null;
+}
+
+function savePick(game, payload) {
+  const round = targetRound(game);
+  if (!round) {
+    showToast("회차 정보를 불러오지 못했어요");
+    return;
+  }
+
+  const entries = loadSaved(game);
+  const key = game === "lotto" ? payload.numbers.join(",") : `${payload.group}-${payload.number}`;
+  const dup = entries.some(
+    (e) =>
+      e.round === round &&
+      (game === "lotto" ? e.numbers.join(",") : `${e.group}-${e.number}`) === key
+  );
+
+  if (dup) {
+    showToast(`${round}회차에 이미 저장된 번호예요`);
+    return;
+  }
+
+  entries.unshift({ ...payload, round, ts: Date.now() });
+  writeSaved(game, entries);
+  showToast(`${round}회차로 저장했어요`);
+  renderSaved(game);
+}
+
+function lottoRankOf(numbers, result) {
+  const winSet = new Set(result.numbers);
+  const matched = numbers.filter((n) => winSet.has(n));
+  const bonusMatch = numbers.includes(result.bonus);
+  return { rank: rankLabel(matched.length, bonusMatch), matchCount: matched.length, winSet };
+}
+
+function buildSavedItem(game, entry, index, result) {
+  const item = document.createElement("div");
+  item.className = "saved-item";
+
+  const top = document.createElement("div");
+  top.className = "saved-top";
+
+  const roundEl = document.createElement("span");
+  roundEl.className = "saved-round";
+  roundEl.textContent = `제${entry.round}회`;
+  top.appendChild(roundEl);
+
+  const statusEl = document.createElement("span");
+  if (!result) {
+    statusEl.className = "saved-status pending";
+    statusEl.textContent = "추첨 대기 중";
+  } else if (game === "lotto") {
+    const { rank, matchCount } = lottoRankOf(entry.numbers, result);
+    const hit = rank !== "낙첨";
+    statusEl.className = `saved-status ${hit ? "hit" : ""}`;
+    statusEl.textContent = hit ? `🎉 ${rank} (${matchCount}개 일치)` : `낙첨 (${matchCount}개 일치)`;
+    if (hit) item.classList.add("win");
+  } else {
+    const rank = pensionRank(entry.group, entry.number, result.group, result.number);
+    const hit = rank !== "낙첨";
+    statusEl.className = `saved-status ${hit ? "hit" : ""}`;
+    statusEl.textContent = hit ? `🎉 ${rank}` : "낙첨";
+    if (hit) item.classList.add("win");
+  }
+  top.appendChild(statusEl);
+
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "saved-remove";
+  removeBtn.type = "button";
+  removeBtn.textContent = "삭제";
+  removeBtn.addEventListener("click", () => {
+    const entries = loadSaved(game);
+    entries.splice(index, 1);
+    writeSaved(game, entries);
+    renderSaved(game);
+  });
+  top.appendChild(removeBtn);
+
+  const ballsWrap = document.createElement("div");
+  ballsWrap.className = "saved-balls";
+
+  if (game === "lotto") {
+    const winSet = result ? new Set(result.numbers) : null;
+    entry.numbers.forEach((num) => {
+      const ball = makeBall(num, colorRangeClass(num));
+      if (winSet && winSet.has(num)) ball.classList.add("matched");
+      ballsWrap.appendChild(ball);
+    });
+  } else {
+    ballsWrap.appendChild(makeGroupBadge(entry.group));
+    entry.number.split("").forEach((d) => ballsWrap.appendChild(makeDigit(d)));
+  }
+
+  item.appendChild(top);
+  item.appendChild(ballsWrap);
+  return item;
+}
+
+async function renderSaved(game) {
+  const listEl = savedListEl[game];
+  if (!listEl) return;
+
+  const entries = loadSaved(game);
+  listEl.innerHTML = "";
+
+  if (entries.length === 0) {
+    listEl.innerHTML = '<p class="saved-empty">저장한 번호가 없어요. 번호를 뽑고 "저장"을 눌러보세요.</p>';
+    return;
+  }
+
+  // Fetch each distinct round once; a null result means "not drawn yet".
+  const rounds = [...new Set(entries.map((e) => e.round))];
+  const results = {};
+  await Promise.all(
+    rounds.map(async (round) => {
+      try {
+        const res = await fetch(`/api/result/${game}/${round}`);
+        const data = await res.json();
+        results[round] = data.ok ? data.result : null;
+      } catch {
+        results[round] = null;
+      }
+    })
+  );
+
+  entries.forEach((entry, i) => {
+    listEl.appendChild(buildSavedItem(game, entry, i, results[entry.round]));
+  });
+}
+
+document.getElementById("clear-saved").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  localStorage.removeItem(SAVED_KEY.lotto);
+  renderSaved("lotto");
+});
+
+document.getElementById("pension-clear-saved").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  localStorage.removeItem(SAVED_KEY.pension);
+  renderSaved("pension");
+});
+
+renderSaved("lotto");
+renderSaved("pension");
