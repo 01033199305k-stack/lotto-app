@@ -225,6 +225,15 @@ def fetch_latest_lotto():
         "date": format_dh_date(item["ltRflYmd"]),
         "numbers": numbers,
         "bonus": item["bnsWnNo"],
+        "prizes": [
+            {
+                "rank": rank,
+                "winners": item.get(f"rnk{rank}WnNope"),
+                "amount": item.get(f"rnk{rank}WnAmt"),
+            }
+            for rank in range(1, 6)
+        ],
+        "sales": item.get("rlvtEpsdSumNtslAmt"),
     }
 
 
@@ -282,6 +291,16 @@ def fetch_lotto_round(round_no):
             "date": format_dh_date(item["ltRflYmd"]),
             "numbers": sorted(item[f"tm{i}WnNo"] for i in range(1, 7)),
             "bonus": item["bnsWnNo"],
+            # 등수별 당첨자 수와 1인당 수령액. 회차 조회 화면에서만 쓴다.
+            "prizes": [
+                {
+                    "rank": rank,
+                    "winners": item.get(f"rnk{rank}WnNope"),
+                    "amount": item.get(f"rnk{rank}WnAmt"),
+                }
+                for rank in range(1, 6)
+            ],
+            "sales": item.get("rlvtEpsdSumNtslAmt"),
         }
     return None
 
@@ -477,6 +496,11 @@ def guide_article(slug):
     return render_template("article.html", article=article, others=rotated[:4])
 
 
+@app.route("/result")
+def result_page():
+    return render_template("result.html")
+
+
 @app.route("/stats")
 def stats_page():
     lotto_rows = sorted(
@@ -543,6 +567,7 @@ def sitemap():
         {"loc": f"{base}/", "changefreq": "daily", "priority": "1.0", "template": "index.html"},
         {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.7", "template": "guide.html"},
         {"loc": f"{base}/stats", "changefreq": "weekly", "priority": "0.7", "template": "stats.html"},
+        {"loc": f"{base}/result", "changefreq": "weekly", "priority": "0.8", "template": "result.html"},
     ]
     # 가이드 글은 내용이 바뀔 때만 lastmod가 움직이도록 articles.py 기준으로 잡는다.
     for article in ARTICLES:

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회차별 당첨번호 조회 | 로또 6/45 · 연금복권720+</title>
+<meta name="description" content="로또 6/45와 연금복권720+ 지난 회차 당첨번호를 회차 번호로 바로 조회합니다. 등수별 당첨자 수와 1인당 당첨금까지 함께 확인하세요.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="canonical" href="https://lotto-app-m0fe.onrender.com/result">
+<meta property="og:type" content="website">
+<meta property="og:title" content="회차별 당첨번호 조회">
+<meta property="og:description" content="지난 회차 당첨번호와 등수별 당첨금을 한 번에 확인하세요.">
+<meta property="og:url" content="https://lotto-app-m0fe.onrender.com/result">
+<meta property="og:image" content="https://lotto-app-m0fe.onrender.com/static/icons/icon-512.png">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="로또 번호 추첨기">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="회차별 당첨번호 조회">
+<meta name="twitter:description" content="지난 회차 당첨번호와 당첨금을 확인하세요">
+<meta name="twitter:image" content="https://lotto-app-m0fe.onrender.com/static/icons/icon-512.png">
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9852386681125742" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8XNLS8PVQQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8XNLS8PVQQ');
+</script>
+</head>
+<body>
+  <main class="card" style="max-width:560px;">
+    <h1 style="font-size:1.3rem;">회차별 당첨번호 조회</h1>
+    <p class="subtitle">지난 회차 당첨번호와 등수별 당첨금을 확인해보세요</p>
+
+    <div class="result-tabs">
+      <button class="game-tab active" data-game="lotto">로또 6/45</button>
+      <button class="game-tab" data-game="pension">연금복권720+</button>
+    </div>
+
+    <div class="round-picker">
+      <button id="round-prev" class="round-nav" type="button" aria-label="이전 회차">◀</button>
+      <input id="round-input" type="number" min="1" inputmode="numeric" aria-label="회차 번호">
+      <span class="round-unit">회</span>
+      <button id="round-next" class="round-nav" type="button" aria-label="다음 회차">▶</button>
+    </div>
+    <button id="round-search" class="draw-btn" type="button">조회하기</button>
+
+    <div id="result-box" class="result-box"></div>
+
+    <footer class="footer">
+      <a href="{{ url_for('index') }}">번호 뽑기</a>
+      <span aria-hidden="true"> · </span>
+      <a href="{{ url_for('stats_page') }}">번호별 통계</a>
+      <span aria-hidden="true"> · </span>
+      <a href="{{ url_for('guide') }}">상식 가이드</a>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="{{ asset('result.js') }}"></script>
+</body>
+</html>

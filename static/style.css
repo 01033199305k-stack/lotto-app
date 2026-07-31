@@ -66,6 +66,112 @@ h1 {
   opacity: 0.85;
 }
 
+.result-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.round-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.round-picker input {
+  width: 110px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.round-unit {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.round-nav {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.round-nav:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.result-box {
+  margin-top: 20px;
+}
+
+.result-head {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.result-balls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.result-empty {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.result-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+
+.prize-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.prize-table th,
+.prize-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+
+.prize-table th:first-child,
+.prize-table td:first-child {
+  text-align: left;
+  font-weight: 700;
+}
+
+.prize-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
 .feature-pills {
   list-style: none;
   margin: 0 0 22px;
