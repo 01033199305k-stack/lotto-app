@@ -7,6 +7,11 @@ on:
     - cron: "0 16 * * 6"  # 토 16:00 UTC = 일 01:00 KST
     - cron: "0 16 * * 4"  # 목 16:00 UTC = 금 01:00 KST
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "새 회차가 없어도 Render 배포를 트리거한다 (배포 훅 점검용)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -43,13 +48,16 @@ jobs:
       # app, so it never receives a push webhook and its "auto-deploy on commit"
       # setting never fires. The deploy hook is what actually ships the change.
       - name: Trigger Render deploy
-        if: steps.commit.outputs.changed == 'true'
+        if: steps.commit.outputs.changed == 'true' || inputs.force_deploy
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
           if [[ -z "$HOOK" ]]; then
             echo "RENDER_DEPLOY_HOOK secret is not set; skipping deploy trigger."
             echo "Data is committed, but the live site will not pick it up until a deploy runs."
-            exit 0
+            exit 1
           fi
-          curl -sS -o /dev/null -w "deploy hook -> %{http_code}\n" -X POST "$HOOK"
+          code=$(curl -sS -o /dev/null -w "%{http_code}" -X POST "$HOOK")
+          echo "deploy hook -> $code"
+          # 훅 URL이 틀리면 조용히 넘어가지 않고 여기서 실패해야 알아챈다.
+          [[ "$code" == "200" || "$code" == "201" ]]
