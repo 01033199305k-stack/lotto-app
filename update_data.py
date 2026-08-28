@@ -190,11 +190,28 @@ def update_pension(dry_run):
     print(f"연금복권 데이터 갱신 완료 ({new_max}회까지)")
 
 
+def update_draw_history(dry_run):
+    """회차별 원본 이력(로또_회차별_당첨번호.json)도 함께 채운다.
+
+    분석 페이지가 이 파일을 쓴다. 동반출현 CSV는 조합 집계라서
+    '몇 회차째 미출현' 같은 회차 단위 지표를 뽑을 수 없다.
+    """
+    if dry_run:
+        print("(--dry-run: 회차 이력 파일 수정 안 함)")
+        return
+
+    import fetch_draws
+
+    fetch_draws.main()
+
+
 def main():
     dry_run = "--dry-run" in sys.argv
     update_lotto(dry_run)
     print()
     update_pension(dry_run)
+    print()
+    update_draw_history(dry_run)
 
 
 if __name__ == "__main__":

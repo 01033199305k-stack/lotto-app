@@ -1156,3 +1156,115 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   color: var(--muted);
   padding: 6px 8px;
 }
+
+/* ── 분석 페이지 ─────────────────────────────────────── */
+.analysis-lead {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: var(--muted);
+  word-break: keep-all;
+  margin: 0 0 26px;
+}
+
+.analysis-h2 {
+  font-size: 1.05rem;
+  margin: 30px 0 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.analysis-h3 {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.analysis-p {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  word-break: keep-all;
+  margin: 0 0 14px;
+}
+
+.analysis-note {
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--muted);
+  word-break: keep-all;
+  background: var(--bg);
+  border-left: 3px solid var(--border);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 0 0 14px;
+}
+
+.analysis-cols {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.analysis-cols > div {
+  flex: 1 1 180px;
+}
+
+.analysis-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.analysis-list li,
+.analysis-inline li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.analysis-inline {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.analysis-list .ball,
+.analysis-inline .ball {
+  width: 30px;
+  height: 30px;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.analysis-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+.analysis-table th,
+.analysis-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+
+.analysis-table th:first-child,
+.analysis-table td:first-child {
+  text-align: left;
+}
+
+.analysis-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.78rem;
+}

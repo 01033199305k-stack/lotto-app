@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로또 번호는 정말 무작위일까 | {{ a.total }}회차 전수 분석</title>
+<meta name="description" content="로또 6/45 {{ a.total }}회차 당첨번호를 전부 모아 균등성·홀짝·연속번호·합계를 통계 검정했습니다. 특정 번호가 잘 나온다는 말이 사실인지 데이터로 확인해보세요.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="canonical" href="https://lotto-app-m0fe.onrender.com/analysis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="로또 번호는 정말 무작위일까 — {{ a.total }}회차 전수 분석">
+<meta property="og:description" content="{{ a.total }}회차를 전부 검정해봤습니다. '잘 나오는 번호'는 있었을까요?">
+<meta property="og:url" content="https://lotto-app-m0fe.onrender.com/analysis">
+<meta property="og:image" content="https://lotto-app-m0fe.onrender.com/static/icons/icon-512.png">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="로또 번호 추첨기">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="로또 번호는 정말 무작위일까">
+<meta name="twitter:description" content="{{ a.total }}회차 전수 분석 결과">
+<meta name="twitter:image" content="https://lotto-app-m0fe.onrender.com/static/icons/icon-512.png">
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9852386681125742" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8XNLS8PVQQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8XNLS8PVQQ');
+</script>
+</head>
+<body>
+  <main class="card" style="text-align:left; max-width:660px;">
+    <h1 style="font-size:1.3rem; text-align:center;">로또 번호는 정말 무작위일까</h1>
+    <p class="subtitle" style="text-align:center;">1회부터 {{ a.latest }}회까지 {{ a.total }}회차를 전부 모아서 검정해봤습니다</p>
+
+    <p class="analysis-lead">
+      "이 번호가 잘 나온다"는 말을 많이 봅니다. 정말 그런지 확인하는 방법은 하나뿐입니다 —
+      전 회차를 모아서 통계적으로 따져보는 것. 아래 숫자는 모두 실제 당첨 데이터에서 계산했고,
+      새 회차가 나오면 매주 자동으로 갱신됩니다.
+    </p>
+
+    <h2 class="analysis-h2">1. 특정 번호가 더 자주 나왔을까</h2>
+    <p class="analysis-p">
+      번호 하나가 나올 기대 횟수는 <strong>{{ a.expected }}회</strong>입니다
+      ({{ a.total }}회차 × 6개 ÷ 45).
+    </p>
+
+    <div class="analysis-cols">
+      <div>
+        <h3 class="analysis-h3">많이 나온 번호</h3>
+        <ul class="analysis-list">
+          {% for n, c in a.top %}
+          <li><span class="ball {{ 'range-1' if n <= 10 else 'range-2' if n <= 20 else 'range-3' if n <= 30 else 'range-4' if n <= 40 else 'range-5' }}">{{ n }}</span> {{ c }}회</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h3 class="analysis-h3">적게 나온 번호</h3>
+        <ul class="analysis-list">
+          {% for n, c in a.bottom %}
+          <li><span class="ball {{ 'range-1' if n <= 10 else 'range-2' if n <= 20 else 'range-3' if n <= 30 else 'range-4' if n <= 40 else 'range-5' }}">{{ n }}</span> {{ c }}회</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <p class="analysis-p">
+      가장 많은 번호와 적은 번호의 차이가 꽤 커 보입니다. 하지만 이 정도 차이는
+      <strong>동전을 1,238번 던져도 앞면이 정확히 619번 나오지 않는 것</strong>과 같은 이유로 생깁니다.
+      실제로 균등성을 검정하는 카이제곱 값은 <strong>{{ a.chi }}</strong>인데,
+      완전한 무작위일 때 기대되는 값이 44 근처입니다.
+      기준(약 60)을 한참 밑돌기 때문에 <strong>"특정 번호가 더 잘 나온다"는 증거는 없습니다.</strong>
+    </p>
+    <p class="analysis-note">
+      오히려 44보다 낮다는 건 실제 무작위보다도 고르게 퍼져 있다는 뜻입니다.
+      다만 이런 검정을 여러 개 돌리면 그중 하나쯤은 우연히 튀기 마련이라, 특별한 의미를 두긴 어렵습니다.
+    </p>
+
+    <h2 class="analysis-h2">2. 홀수와 짝수는 몇 개씩 나왔을까</h2>
+    <table class="analysis-table">
+      <thead><tr><th>홀수 개수</th><th>실제 회차</th><th>비율</th></tr></thead>
+      <tbody>
+        {% for k in range(7) %}
+        <tr>
+          <td>{{ k }}개</td>
+          <td>{{ a.odd_dist[k] }}회</td>
+          <td>{{ (a.odd_dist[k] / a.total * 100) | round(1) }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="analysis-p">
+      홀수 3개(=짝수 3개)가 가장 흔합니다. 이건 특별한 법칙이 아니라
+      45개 중 6개를 아무렇게나 뽑아도 나오는 자연스러운 분포입니다.
+      홀수만 6개 나온 회차도 {{ a.odd_dist[6] }}번, 짝수만 6개인 회차도 {{ a.odd_dist[0] }}번 있었습니다.
+    </p>
+
+    <h2 class="analysis-h2">3. 연속된 번호는 잘 안 나올까</h2>
+    <p class="analysis-p">
+      12·13처럼 <strong>붙어 있는 번호가 하나라도 포함된 회차가 전체의 {{ a.consecutive_pct }}%</strong>였습니다.
+      이론값은 52.9%이니 거의 정확히 일치합니다.
+      "연속번호는 잘 안 나온다"며 피하는 경우가 많은데, 실제로는 <strong>두 번에 한 번꼴로 나옵니다.</strong>
+    </p>
+
+    <h2 class="analysis-h2">4. 여섯 숫자의 합</h2>
+    <p class="analysis-p">
+      당첨번호 6개를 더한 값의 평균은 <strong>{{ a.sum_avg }}</strong>입니다.
+      이론적으로 기대되는 값은 138.0 — 소수점까지 거의 맞아떨어집니다.
+      최소 {{ a.sum_min }}, 최대 {{ a.sum_max }}까지 나왔습니다.
+    </p>
+
+    <h2 class="analysis-h2">5. 오래 안 나온 번호</h2>
+    <p class="analysis-p">가장 오래 얼굴을 안 비추고 있는 번호입니다.</p>
+    <ul class="analysis-inline">
+      {% for n, gap in a.droughts[:6] %}
+      <li><span class="ball {{ 'range-1' if n <= 10 else 'range-2' if n <= 20 else 'range-3' if n <= 30 else 'range-4' if n <= 40 else 'range-5' }}">{{ n }}</span> {{ gap }}회차째</li>
+      {% endfor %}
+    </ul>
+    <p class="analysis-p">역대 최장 기록은 이렇습니다.</p>
+    <ul class="analysis-inline">
+      {% for n, gap in a.longest_gap %}
+      <li><span class="ball {{ 'range-1' if n <= 10 else 'range-2' if n <= 20 else 'range-3' if n <= 30 else 'range-4' if n <= 40 else 'range-5' }}">{{ n }}</span> {{ gap }}회 연속</li>
+      {% endfor %}
+    </ul>
+    <p class="analysis-note">
+      오래 안 나왔다고 해서 나올 때가 된 것은 아닙니다. 추첨기는 지난 회차를 기억하지 못하고,
+      매주 45개 공에서 새로 뽑을 뿐입니다. 이걸 착각하는 것을 <strong>도박사의 오류</strong>라고 부릅니다.
+    </p>
+
+    <h2 class="analysis-h2">그래서 결론은</h2>
+    <p class="analysis-p">
+      {{ a.total }}회차를 전부 뒤졌지만 <strong>무작위가 아니라고 볼 만한 근거는 나오지 않았습니다.</strong>
+      번호별 빈도, 홀짝 비율, 연속번호, 합계까지 모두 확률이 예측한 값 안에 들어왔습니다.
+    </p>
+    <p class="analysis-p">
+      그래서 이 사이트의 번호 추천도 <strong>당첨 확률을 높여주지 않습니다.</strong>
+      직접 고르기 번거로울 때 대신 뽑아주는 도구일 뿐이고, 통계는 지나간 결과를 보는 재미로 봐주세요.
+      로또 1등 확률은 어느 번호를 고르든 <strong>814만 5,060분의 1</strong>로 같습니다.
+    </p>
+
+    <footer class="footer">
+      <a href="{{ url_for('index') }}">번호 뽑기</a>
+      <span aria-hidden="true"> · </span>
+      <a href="{{ url_for('result_page') }}">회차별 당첨번호</a>
+      <span aria-hidden="true"> · </span>
+      <a href="{{ url_for('stats_page') }}">번호별 통계</a>
+      <span aria-hidden="true"> · </span>
+      <a href="{{ url_for('guide') }}">상식 가이드</a>
+    </footer>
+  </main>
+</body>
+</html>

@@ -18,6 +18,7 @@ Compress(app)
 
 CSV_PATH = Path(__file__).resolve().parent / "동반출현_전체데이터.csv"
 PENSION_PATH = Path(__file__).resolve().parent / "연금복권_전체데이터.json"
+DRAWS_PATH = Path(__file__).resolve().parent / "로또_회차별_당첨번호.json"
 UNIVERSE = range(1, 46)
 PENSION_GROUPS = range(1, 6)
 PENSION_DIGITS = range(10)
@@ -76,6 +77,70 @@ def load_data():
     }
 
     return combos_by_type, number_scores, freq, mixed_weights
+
+
+def load_draw_analysis():
+    """회차별 당첨번호로 '정말 무작위인가'를 확인할 수 있는 지표를 미리 계산한다.
+
+    파일이 없으면 None을 돌려주고, 분석 페이지는 그때 숨긴다. 데이터가 없다고
+    사이트 전체가 죽으면 안 되기 때문이다.
+    """
+    if not DRAWS_PATH.exists():
+        return None
+
+    payload = json.loads(DRAWS_PATH.read_text(encoding="utf-8"))
+    draws = payload.get("draws") or []
+    total = len(draws)
+    if total == 0:
+        return None
+
+    counts = {n: 0 for n in UNIVERSE}
+    odd_dist = {k: 0 for k in range(7)}
+    sums = []
+    consecutive = 0
+    last_index = {}
+    longest_gap = {n: 0 for n in UNIVERSE}
+
+    for idx, draw in enumerate(draws):
+        nums = draw["numbers"]
+        sums.append(sum(nums))
+        odd_dist[sum(1 for n in nums if n % 2)] += 1
+        if any(b - a == 1 for a, b in zip(nums, nums[1:])):
+            consecutive += 1
+        for n in nums:
+            counts[n] += 1
+            if n in last_index:
+                longest_gap[n] = max(longest_gap[n], idx - last_index[n] - 1)
+            last_index[n] = idx
+
+    # 균등성 카이제곱. 자유도 44라 기대값도 44 언저리가 정상이다.
+    expected = total * 6 / 45
+    chi = sum((counts[n] - expected) ** 2 / expected for n in UNIVERSE)
+
+    ranked = sorted(counts.items(), key=lambda kv: kv[1], reverse=True)
+    droughts = sorted(
+        ((n, total - 1 - last_index[n]) for n in UNIVERSE if n in last_index),
+        key=lambda kv: kv[1],
+        reverse=True,
+    )
+
+    return {
+        "total": total,
+        "latest": payload.get("latest"),
+        "expected": round(expected, 1),
+        "counts": counts,
+        "ranked": ranked,
+        "top": ranked[:5],
+        "bottom": ranked[-5:][::-1],
+        "chi": round(chi, 1),
+        "odd_dist": odd_dist,
+        "sum_avg": round(sum(sums) / total, 1),
+        "sum_min": min(sums),
+        "sum_max": max(sums),
+        "consecutive_pct": round(consecutive / total * 100, 1),
+        "droughts": droughts[:8],
+        "longest_gap": sorted(longest_gap.items(), key=lambda kv: kv[1], reverse=True)[:5],
+    }
 
 
 def load_pension_data():
@@ -501,6 +566,13 @@ def result_page():
     return render_template("result.html")
 
 
+@app.route("/analysis")
+def analysis_page():
+    if _draw_analysis is None:
+        abort(404)
+    return render_template("analysis.html", a=_draw_analysis)
+
+
 @app.route("/stats")
 def stats_page():
     lotto_rows = sorted(
@@ -568,6 +640,7 @@ def sitemap():
         {"loc": f"{base}/guide", "changefreq": "monthly", "priority": "0.7", "template": "guide.html"},
         {"loc": f"{base}/stats", "changefreq": "weekly", "priority": "0.7", "template": "stats.html"},
         {"loc": f"{base}/result", "changefreq": "weekly", "priority": "0.8", "template": "result.html"},
+        {"loc": f"{base}/analysis", "changefreq": "weekly", "priority": "0.8", "template": "analysis.html"},
     ]
     # 가이드 글은 내용이 바뀔 때만 lastmod가 움직이도록 articles.py 기준으로 잡는다.
     for article in ARTICLES:
@@ -683,6 +756,7 @@ def api_pension_analyze():
 
 _combos_by_type, _number_scores, _number_freq, _mixed_weights = load_data()
 _pension_weights = load_pension_data()
+_draw_analysis = load_draw_analysis()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
