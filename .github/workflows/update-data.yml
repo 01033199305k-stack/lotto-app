@@ -44,9 +44,10 @@ jobs:
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      # Render clones this repo as a public URL rather than through the GitHub
-      # app, so it never receives a push webhook and its "auto-deploy on commit"
-      # setting never fires. The deploy hook is what actually ships the change.
+      # Render's auto-deploy does fire on these pushes (verified in its deploy
+      # log), so this is a safety net rather than the only path: if the repo
+      # connection breaks again, data would otherwise commit and never ship.
+      # It costs one redundant rebuild per draw, which is cheap insurance.
       - name: Trigger Render deploy
         if: steps.commit.outputs.changed == 'true' || inputs.force_deploy
         env:
