@@ -12,6 +12,7 @@ from flask import Flask, Response, abort, jsonify, render_template, request, url
 from flask_compress import Compress
 
 from articles import ARTICLES, BY_SLUG
+from ticket_qr import TicketParseError, parse_qr
 
 app = Flask(__name__)
 Compress(app)
@@ -724,6 +725,25 @@ def api_result(game, round_no):
 
     result = get_round(game, round_no)
     return jsonify({"ok": result is not None, "result": result})
+
+
+@app.route("/api/ticket/parse", methods=["POST"])
+def api_ticket_parse():
+    """용지 QR을 찍어 나온 문자열을 회차 + 게임 목록으로 바꿔준다.
+
+    번호를 저장하는 건 브라우저(localStorage)라, 서버는 해석만 하고 아무것도 남기지 않는다.
+    """
+    payload = request.get_json(silent=True) or {}
+    text = payload.get("text") or payload.get("url") or ""
+
+    try:
+        parsed = parse_qr(text)
+    except TicketParseError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+    latest = get_latest("lotto")
+    parsed["drawn"] = bool(latest and parsed["round"] <= latest["round"])
+    return jsonify({"ok": True, **parsed})
 
 
 @app.route("/api/analyze")

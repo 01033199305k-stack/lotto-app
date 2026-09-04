@@ -118,6 +118,10 @@
           <button id="clear-saved" class="clear-history-btn" type="button">전체 지우기</button>
         </summary>
         <p class="hint">번호를 뽑고 <strong>저장</strong>을 누르면 회차와 함께 보관돼요. 추첨이 끝나면 등수를 자동으로 확인해드립니다.</p>
+        <button id="ticket-open" class="draw-btn secondary ticket-open" type="button">
+          실제로 산 용지 등록하기
+        </button>
+        <p class="hint ticket-hint">매장에서 산 용지는 QR을 찍으면 5게임이 한 번에 들어가고, 온라인 구매분은 번호를 눌러서 넣으면 돼요.</p>
         <div id="saved-list" class="saved-list"></div>
       </details>
 
@@ -306,9 +310,58 @@
     </footer>
   </main>
 
+  <div id="ticket-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-ticket-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="ticket-title">
+      <div class="modal-head">
+        <h2 id="ticket-title">내 용지 등록</h2>
+        <button class="modal-close" type="button" data-ticket-close aria-label="닫기">&times;</button>
+      </div>
+
+      <div class="ticket-tabs">
+        <button class="ticket-tab active" type="button" data-ticket-mode="qr">QR 찍기</button>
+        <button class="ticket-tab" type="button" data-ticket-mode="manual">번호 입력</button>
+      </div>
+
+      <section id="ticket-qr" class="ticket-pane">
+        <div id="ticket-scanner" class="ticket-scanner" hidden>
+          <video id="ticket-video" playsinline muted></video>
+          <div class="scan-frame"></div>
+        </div>
+        <p id="ticket-qr-msg" class="ticket-msg">용지 아래쪽 QR코드를 카메라에 비춰주세요.</p>
+        <div class="ticket-actions">
+          <button id="ticket-scan-start" class="draw-btn" type="button">카메라 켜기</button>
+          <label class="draw-btn secondary ticket-file">
+            사진에서 찾기
+            <input id="ticket-file-input" type="file" accept="image/*" hidden>
+          </label>
+        </div>
+      </section>
+
+      <section id="ticket-manual" class="ticket-pane" hidden>
+        <label class="ticket-round">
+          회차
+          <input id="ticket-round-input" type="number" min="1" inputmode="numeric">
+        </label>
+        <div id="ticket-grid" class="ticket-grid"></div>
+        <p id="ticket-manual-msg" class="ticket-msg">번호 6개를 골라주세요.</p>
+        <div class="ticket-actions">
+          <button id="ticket-add-game" class="draw-btn secondary" type="button" disabled>이 게임 담기</button>
+        </div>
+      </section>
+
+      <div id="ticket-basket" class="ticket-basket" hidden>
+        <p class="ticket-basket-head">담긴 게임 <span id="ticket-count">0</span>개</p>
+        <div id="ticket-basket-list"></div>
+        <button id="ticket-save" class="draw-btn" type="button">전부 저장하기</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
   <script src="{{ asset('app.js') }}"></script>
+  <script src="{{ asset('ticket.js') }}"></script>
   <script src="{{ asset('ads.js') }}"></script>
   <script>
     if ("serviceWorker" in navigator) {

@@ -688,8 +688,7 @@ h1 {
 .saved-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 8px;
 }
 
@@ -697,11 +696,19 @@ h1 {
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
+/* 상태 문구가 남는 폭을 다 먹고, 좁으면 자기만 줄어든다.
+   이게 없으면 좁은 폰에서 "삭제"가 "삭 제"로 쪼개진다. */
 .saved-status {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
   font-size: 0.72rem;
   color: var(--muted);
+  word-break: keep-all;
 }
 
 .saved-status.pending {
@@ -720,6 +727,8 @@ h1 {
   font-size: 0.72rem;
   cursor: pointer;
   padding: 2px 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .saved-remove:hover {
@@ -1267,4 +1276,262 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   color: var(--muted);
   font-weight: 500;
   font-size: 0.78rem;
+}
+
+/* ---------- 내 용지 등록 (QR / 직접 입력) ---------- */
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.ticket-open {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.ticket-hint {
+  margin-top: 6px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* display:flex가 hidden 속성의 기본 display:none을 이겨버리므로 명시적으로 눌러준다. */
+.modal[hidden] {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 12, 20, 0.55);
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--card-bg);
+  color: var(--text);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.modal-close {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.ticket-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.ticket-tab {
+  flex: 1;
+  padding: 9px 0;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ticket-tab.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.ticket-scanner {
+  position: relative;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.ticket-scanner video {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+}
+
+/* 어디에 대야 하는지 알려주는 가이드 틀 */
+.scan-frame {
+  position: absolute;
+  inset: 18% 12%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.ticket-msg {
+  margin: 10px 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--muted);
+  word-break: keep-all;
+}
+
+.ticket-msg.ok {
+  color: #16a34a;
+}
+
+.ticket-msg.warn {
+  color: #dc2626;
+}
+
+.ticket-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ticket-actions .draw-btn {
+  flex: 1;
+  margin: 0;
+}
+
+.ticket-file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ticket-round {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ticket-round input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 5px;
+}
+
+.ticket-cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ticket-cell.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.ticket-basket {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.ticket-basket-head {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.ticket-cart-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ticket-cart-round {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ticket-cart-balls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  flex: 1;
+}
+
+.ticket-cart-balls .ball {
+  width: 26px;
+  height: 26px;
+  font-size: 0.72rem;
+}
+
+.ticket-basket .draw-btn {
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* 구매한 용지인지 그냥 뽑아본 번호인지 구분 */
+.saved-tag {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+@media (max-width: 420px) {
+  .ticket-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
 }

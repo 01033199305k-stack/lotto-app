@@ -1021,7 +1021,8 @@ window.addEventListener("appinstalled", () => {
 // ---------- 내가 저장한 번호 (회차별 자동 당첨확인) ----------
 
 const SAVED_KEY = { lotto: "lotto_saved_picks", pension: "pension_saved_picks" };
-const SAVED_LIMIT = 50;
+// 용지 한 장이 5게임이라 50이면 열 장 만에 찬다.
+const SAVED_LIMIT = 300;
 
 const savedListEl = {
   lotto: document.getElementById("saved-list"),
@@ -1081,6 +1082,19 @@ function savePick(game, payload, btn) {
   renderSaved(game);
 }
 
+// 실제로 산 용지를 등록할 때 쓴다. savePick과 달리 회차를 직접 받는데,
+// 용지에는 회차가 찍혀 있고 지난 회차 용지를 뒤늦게 넣을 수도 있기 때문이다.
+// 저장했으면 true, 이미 있던 조합이면 false.
+function saveTicketGame(round, numbers) {
+  const entries = loadSaved("lotto");
+  const key = numbers.join(",");
+  if (entries.some((e) => e.round === round && e.numbers.join(",") === key)) return false;
+
+  entries.unshift({ numbers: numbers, round: round, ts: Date.now(), source: "ticket" });
+  writeSaved("lotto", entries);
+  return true;
+}
+
 function lottoRankOf(numbers, result) {
   const winSet = new Set(result.numbers);
   const matched = numbers.filter((n) => winSet.has(n));
@@ -1099,6 +1113,14 @@ function buildSavedItem(game, entry, index, result) {
   roundEl.className = "saved-round";
   roundEl.textContent = `제${entry.round}회`;
   top.appendChild(roundEl);
+
+  // 실제로 구매한 용지와 사이트에서 뽑아본 번호를 구분해준다.
+  if (entry.source === "ticket") {
+    const tag = document.createElement("span");
+    tag.className = "saved-tag";
+    tag.textContent = "구매";
+    top.appendChild(tag);
+  }
 
   const statusEl = document.createElement("span");
   if (!result) {
