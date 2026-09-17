@@ -3,3 +3,5 @@ __pycache__/
 server*.log
 .venv/
 .claude/
+parking_site.json
+.parking_state.json

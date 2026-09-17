@@ -1,0 +1,67 @@
+name: Auto free parking
+
+on:
+  schedule:
+    # GitHub의 스케줄 최소 간격이 5분이고, 부하가 걸리면 몇 분 더 밀린다.
+    # 입차 직후 몇 분 안에만 등록되면 되는 용도라 이 정도면 충분하다.
+    # UTC 23시~13시 = KST 08시~22시. 주차장 안 쓰는 새벽엔 안 돈다.
+    - cron: "*/5 23,0-13 * * *"
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "실제로 등록한다 (끄면 무엇을 등록할지 로그로만 보여준다)"
+        type: boolean
+        default: false
+
+# 같은 시각에 두 번 돌아 중복 등록되는 일이 없게 한 번에 하나만 돈다.
+concurrency:
+  group: parking-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 러너는 매번 새 머신이라 '이미 등록함' 기록이 날아간다. 캐시로 이어붙인다.
+      # (사이트가 할인 적용 여부를 알려주면 레시피의 already_when 쪽이 더 확실하다.)
+      - uses: actions/cache@v4
+        with:
+          path: .parking_state.json
+          key: parking-state-${{ github.run_id }}
+          restore-keys: parking-state-
+
+      - name: Write site recipe
+        env:
+          RECIPE: ${{ secrets.PARKING_CONFIG_JSON }}
+        run: |
+          if [[ -z "$RECIPE" ]]; then
+            echo "PARKING_CONFIG_JSON secret이 없어서 건너뜁니다."
+            echo "parking_site.example.json을 채워 저장소 Settings > Secrets에 넣으세요."
+            echo "skip=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          printf '%s' "$RECIPE" > parking_site.json
+          python -c "import json;json.load(open('parking_site.json',encoding='utf-8'))"
+
+      - name: Register free parking
+        if: env.skip != 'true'
+        env:
+          PARKING_USER: ${{ secrets.PARKING_USER }}
+          PARKING_PASS: ${{ secrets.PARKING_PASS }}
+          PARKING_STORE: ${{ secrets.PARKING_STORE }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # 수동 실행에서 commit을 켠 경우에만 미리보기가 아니라 진짜 등록한다.
+          PARKING_COMMIT: ${{ (github.event_name == 'schedule' || inputs.commit) && '1' || '0' }}
+        run: |
+          python parking_watch.py --config parking_site.json --state .parking_state.json
+
+      - name: Scrub recipe
+        if: always()
+        run: rm -f parking_site.json
