@@ -16,7 +16,39 @@
 | 3 | `python parking_watch.py --config parking_site.json` 으로 **미리보기** 확인 |
 | 4 | 맞으면 `--commit` 붙여 실제 등록, 그 다음 GitHub Actions에 올려 자동화 |
 
-## 1. 사이트 요청 알아내기
+## 0. cURL 붙여넣기로 레시피 자동 생성 (권장)
+
+레시피를 손으로 쓰는 대신, 개발자도구에서 요청을 복사해 넘기면 변환기가 만들어 준다.
+**비밀번호는 자동으로 `${PARKING_PASS}` 자리표시자로 바뀌므로 파일에 평문이 남지 않는다.**
+
+```bash
+# 개발자도구 Network 탭에서 요청 우클릭 -> Copy -> Copy as cURL (bash)
+# 각각 파일로 저장한 뒤:
+python curl_to_recipe.py \
+    --login login.txt --entries list.txt --register register.txt \
+    --entries-response list.json \
+    --plate '12가3456' --user 'store01' --password '실제비번' \
+    -o parking_site.json
+```
+
+- `--entries-response`에 입차 목록 응답 JSON(Network 탭 **Response**에서 복사)을 같이 주면
+  배열 위치(`list_path`)와 차량번호·식별자 키(`fields`)를 알아서 찾는다.
+- 등록 요청 본문에 박혀 있던 입차 식별자·차량번호는 `${entry.id}` / `${entry.plate}`로 바뀐다.
+- 만들어진 파일은 초안이다. `--commit` 없이 한 번 돌려 미리보기로 확인하고 손보면 된다.
+
+### 휴맥스파크스(console.humax-parcs.com) 매장 콘솔이라면
+
+1. `https://console.humax-parcs.com/store` 로그인 화면에서 `F12` → **Network** → `Fetch/XHR` 필터
+2. **Preserve log** 체크 (로그인하면 화면이 넘어가면서 기록이 날아간다)
+3. 로그인 → 목록에 뜬 로그인 요청을 `Copy as cURL` → `login.txt`
+4. 입차 차량 목록 화면에서 **새로고침** → 목록 요청을 `Copy as cURL` → `list.txt`,
+   같은 요청의 **Response** 탭 내용을 `list.json`
+5. 아무 차량이나 하나 무료등록 → 그때 나간 요청을 `Copy as cURL` → `register.txt`
+6. 위 `curl_to_recipe.py` 명령 실행
+
+매장이 둘이면 계정별로 레시피를 따로 만들어 `--config`만 바꿔 두 번 돌리면 된다.
+
+## 1. 요청을 직접 찾아 쓰기 (변환기를 안 쓸 때)
 
 크롬에서 주차등록 사이트를 열고 `F12` → **Network** 탭 → `Fetch/XHR` 필터를 켠 뒤:
 
@@ -98,8 +130,16 @@ python parking_watch.py --config parking_site.json --commit --watch 300   # 5분
 ## 테스트
 
 ```bash
-python test_parking_watch.py
+python test_parking_watch.py    # 엔진: 로그인 세션, 차량번호 대조, 중복 등록 방지
+python test_curl_to_recipe.py   # 변환기: cURL 해석, 비밀번호 유출 방지, 응답 구조 추측
 ```
 
-가짜 주차 사이트를 띄워서 로그인 세션·차량번호 대조·중복 등록 방지를 검증한다.
-진짜 사이트의 화면이 바뀌는 건 여기서 못 잡으므로, 그때는 레시피를 고치면 된다.
+가짜 주차 사이트를 띄워서 검증한다. 진짜 사이트의 화면이 바뀌는 건 여기서 못 잡으므로,
+그때는 레시피를 고치면 된다.
+
+## 계정 관리
+
+- 비밀번호는 `parking_site.json`(gitignore됨)이 아니라 환경변수/Actions secret으로 넣는다.
+- 저장소에 올라가는 파일에는 `${PARKING_PASS}` 자리표시자만 들어간다.
+- 매장 콘솔 비밀번호가 설치 당시 기본값 그대로라면 먼저 바꾸는 게 좋다. 이 계정은
+  주차 할인을 발급할 수 있어서, 새어 나가면 남이 마음대로 할인을 뿌릴 수 있다.
