@@ -213,17 +213,22 @@ def guess_entries_spec(payload):
             fields["entered_at"] = key
             break
 
-    spec = {"format": "json", "fields": fields}
-    if path:
-        spec["list_path"] = path
-
-    # 할인 적용 여부로 쓸 만한 Y/N 플래그가 있으면 already_when 후보로 적어둔다.
+    # 할인 적용 여부로 쓸 만한 Y/N 플래그. fields에도 같이 넣어야 already_when이 읽는다.
+    already = None
     for key, value in rows[0].items():
         if key in fields.values():
             continue
-        if str(value).upper() in ("Y", "N") or "dc" in key.lower() or "discount" in key.lower():
-            spec["_already_when_후보"] = {"field": key, "equals": ["Y"]}
+        if str(value).upper() in ("Y", "N", "TRUE", "FALSE") or \
+                any(h in key.lower() for h in ("dc", "discount", "disc")):
+            fields["discount"] = key
+            already = {"field": "discount", "equals": ["Y", "y", "1", 1, True, "true"]}
             break
+
+    spec = {"format": "json", "fields": fields}
+    if path:
+        spec["list_path"] = path
+    if already:
+        spec["_already_when_후보"] = already
 
     return spec
 

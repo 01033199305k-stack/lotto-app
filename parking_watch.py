@@ -57,16 +57,21 @@ def render(value, ctx):
     if not isinstance(value, str):
         return value
 
-    def sub(m):
-        key = m.group(1)
+    def lookup(key):
         if key in ctx:
-            return str(ctx[key])
+            return ctx[key]
         env = os.environ.get(key)
         if env is None:
             raise ConfigError("${%s} 값이 없어요. 환경변수(또는 Actions secret)를 설정했는지 보세요." % key)
         return env
 
-    return VAR_RE.sub(sub, value)
+    # 값이 통째로 ${...} 하나면 원래 타입을 살린다. inSeq를 "102"가 아니라 102로
+    # 보내야 받아주는 API가 있어서, 문자열로 뭉개면 등록이 거부된다.
+    whole = VAR_RE.fullmatch(value)
+    if whole:
+        return lookup(whole.group(1))
+
+    return VAR_RE.sub(lambda m: str(lookup(m.group(1))), value)
 
 
 # ---------------------------------------------------------------- HTTP
@@ -260,7 +265,12 @@ def already_registered(entry, spec):
     rule = spec.get("already_when")
     if not rule:
         return False
-    value = entry.get(rule.get("field", "raw"))
+    field = rule.get("field", "raw")
+    if field not in entry:
+        # 조용히 '아직 등록 안 됨'으로 넘기면 같은 차를 계속 다시 등록하게 된다.
+        raise ConfigError("already_when이 가리키는 '%s'가 entries.fields에 없어요. "
+                          "fields에 \"%s\": \"<응답의 키 이름>\"을 추가하세요." % (field, field))
+    value = entry[field]
     if value is None:
         return False
     value = str(value)

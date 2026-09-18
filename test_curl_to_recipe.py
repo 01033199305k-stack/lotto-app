@@ -165,7 +165,9 @@ def _():
     assert spec["fields"]["plate"] == "carNumber", spec
     assert spec["fields"]["id"] == "inSeq", spec
     assert spec["fields"]["entered_at"] == "inDt", spec
-    assert spec["_already_when_후보"]["field"] == "dcYn", spec
+    # 할인 표시는 fields에도 들어가야 already_when이 읽을 수 있다.
+    assert spec["fields"]["discount"] == "dcYn", spec
+    assert spec["_already_when_후보"]["field"] == "discount", spec
 
 
 @case("추측한 구조로 실제 파싱이 된다")

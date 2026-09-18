@@ -160,7 +160,8 @@ def config(**over):
 def _():
     reset()
     assert run_once(config(), commit=True) == 1
-    assert SITE.registered == [{"inSeq": "2", "carNo": "12가3456"}], SITE.registered
+    # 목록의 inSeq가 숫자였으니 등록 본문에도 숫자 2로 나가야 한다.
+    assert SITE.registered == [{"inSeq": 2, "carNo": "12가3456"}], SITE.registered
 
 
 @case("--commit 없이는 등록하지 않는다")
@@ -237,6 +238,7 @@ def _():
         "row_regex": r"<tr><td>(?P<plate>[^<]+)</td>.*?seq=(?P<id>\d+)",
     }
     assert run_once(cfg, commit=True) == 1
+    # HTML에서 뽑은 값은 늘 문자열이다(JSON 목록과 달리 타입이 없다).
     assert SITE.registered == [{"inSeq": "2", "carNo": "12가3456"}], SITE.registered
 
 
@@ -296,7 +298,17 @@ def _():
 def _():
     os.environ["TEST_PW"] = "secret"
     got = render({"a": "${TEST_PW}", "b": ["${entry.id}"]}, {"entry.id": 7})
-    assert got == {"a": "secret", "b": ["7"]}, got
+    assert got == {"a": "secret", "b": [7]}, got
+
+
+@case("값이 통째로 ${...} 하나면 원래 타입을 유지한다")
+def _():
+    # JSON 본문에 숫자로 보내야 받아주는 API가 있다. "102"로 뭉개면 등록이 거부된다.
+    got = render({"inSeq": "${entry.id}", "carNo": "${entry.plate}", "free": "${entry.flag}"},
+                 {"entry.id": 102, "entry.plate": "12가3456", "entry.flag": True})
+    assert got == {"inSeq": 102, "carNo": "12가3456", "free": True}, got
+    # 문자열 안에 섞여 있으면 당연히 문자열이다.
+    assert render("seq-${entry.id}", {"entry.id": 102}) == "seq-102"
 
 
 @case("채울 값이 없으면 설정 오류로 알려준다")
@@ -366,6 +378,17 @@ def _():
     assert already_registered({"raw": "등록완료"}, {"already_when": {"field": "raw", "contains": "등록완료"}})
     assert not already_registered({"discount": "N"}, {"already_when": {"field": "discount", "equals": ["Y"]}})
     assert not already_registered({"discount": "N"}, {})
+
+
+@case("already_when이 없는 키를 가리키면 조용히 넘기지 않고 알려준다")
+def _():
+    # 조용히 False가 되면 같은 차를 5분마다 계속 재등록하게 된다. 크게 실패해야 한다.
+    try:
+        already_registered({"plate": "12가3456"}, {"already_when": {"field": "dcYn", "equals": ["Y"]}})
+    except ConfigError as e:
+        assert "fields" in str(e), e
+        return
+    raise AssertionError("없는 키를 가리키는데 그냥 넘어갔다")
 
 
 @case("입차 id가 없으면 차량번호+시각으로 구분한다")

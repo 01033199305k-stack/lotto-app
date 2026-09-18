@@ -11,12 +11,50 @@
 
 | 단계 | 할 일 |
 | --- | --- |
-| 1 | 브라우저 개발자도구로 사이트의 요청 3개(로그인·입차목록·무료등록)를 확인 |
-| 2 | `parking_site.example.json`을 `parking_site.json`으로 복사해 그 3개를 적는다 |
-| 3 | `python parking_watch.py --config parking_site.json` 으로 **미리보기** 확인 |
-| 4 | 맞으면 `--commit` 붙여 실제 등록, 그 다음 GitHub Actions에 올려 자동화 |
+| 1 | `python capture_requests.py --plate '내차번호'` — 뜨는 브라우저에서 로그인하고 무료등록 한 번 클릭 |
+| 2 | `python parking_watch.py --config parking_site.json` 으로 **미리보기** 확인 |
+| 3 | 맞으면 `--commit` 붙여 실제 등록 |
+| 4 | GitHub Actions secret에 넣으면 5분마다 자동 |
 
-## 0. cURL 붙여넣기로 레시피 자동 생성 (권장)
+도구를 안 쓰고 레시피를 직접 쓰고 싶으면 [2번](#2-요청을-직접-찾아-쓰기-도구를-안-쓸-때)으로.
+
+## 0. 브라우저가 대신 받아적게 하기 (가장 쉬움)
+
+개발자도구를 열 필요도, cURL을 복사할 필요도 없다. 스크립트가 크로미움을 띄워주고,
+**평소처럼 로그인하고 무료등록을 한 번만 누르면** 그 사이 오간 요청을 전부 기록해서
+`parking_site.json`을 만들어 준다.
+
+```bash
+pip install playwright && playwright install chromium
+python capture_requests.py --plate '12가3456'
+```
+
+창이 뜨면 이렇게만 하면 된다.
+
+| 순서 | 브라우저에서 |
+| --- | --- |
+| 1 | 로그인 |
+| 2 | 입차 차량 목록 화면 열고 새로고침 한 번 |
+| 3 | 아무 차량이나 **무료등록 한 번** 실제로 누르기 |
+| 4 | 터미널로 돌아와 Enter |
+
+스크립트가 알아서 골라내는 것:
+
+- **로그인 요청** — 비밀번호가 실린 POST
+- **입차 목록 요청** — 응답에 차량번호처럼 생긴 값이 가장 많은 요청. 배열 위치와
+  차량번호·입차식별자·입차시각·할인표시 키까지 찾아 `fields`를 채운다
+- **무료등록 요청** — 목록을 본 뒤에 나간 POST 중 목록의 값을 실어 보낸 것.
+  본문의 입차 식별자와 차량번호는 `${entry.id}` / `${entry.plate}`로 바뀐다
+- **성공 판정 문자열** — 등록 응답의 결과 코드를 `success_contains`로
+
+비밀번호는 브라우저에 직접 입력하면 되고, 결과 파일에는 `${PARKING_PASS}`만 남는다.
+`--dump-dir 폴더`를 주면 기록한 요청 원본도 같이 저장해 직접 확인할 수 있다.
+
+> 이 방식은 문자 인증·카카오 로그인·캡차가 있어도 된다. 사람이 브라우저에서 직접
+> 통과하면 그 뒤의 요청만 받아적기 때문이다. 다만 그런 사이트는 세션이 만료될 때마다
+> 자동 로그인이 막히므로, 자동화 전에 [안 되는 경우](#안-되는-경우)를 보라.
+
+## 1. cURL 붙여넣기로 레시피 생성
 
 레시피를 손으로 쓰는 대신, 개발자도구에서 요청을 복사해 넘기면 변환기가 만들어 준다.
 **비밀번호는 자동으로 `${PARKING_PASS}` 자리표시자로 바뀌므로 파일에 평문이 남지 않는다.**
@@ -48,7 +86,7 @@ python curl_to_recipe.py \
 
 매장이 둘이면 계정별로 레시피를 따로 만들어 `--config`만 바꿔 두 번 돌리면 된다.
 
-## 1. 요청을 직접 찾아 쓰기 (변환기를 안 쓸 때)
+## 2. 요청을 직접 찾아 쓰기 (도구를 안 쓸 때)
 
 크롬에서 주차등록 사이트를 열고 `F12` → **Network** 탭 → `Fetch/XHR` 필터를 켠 뒤:
 
@@ -62,7 +100,7 @@ python curl_to_recipe.py \
 
 요청 위에서 우클릭 → **Copy as cURL** 해두면 헤더까지 그대로 볼 수 있어 편하다.
 
-## 2. 레시피 채우기
+## 3. 레시피 채우기
 
 ```bash
 cp parking_site.example.json parking_site.json
@@ -86,7 +124,7 @@ cp parking_site.example.json parking_site.json
 성공 판정은 `success_contains`(이 문자열이 있어야 성공) / `failure_contains`(있으면 실패)로 잡는다.
 로그인 실패해도 HTTP 200을 주는 사이트가 많아서, 이 둘 중 하나는 꼭 넣는 게 좋다.
 
-## 3. 돌려보기
+## 4. 돌려보기
 
 ```bash
 export PARKING_USER='아이디'
@@ -99,7 +137,7 @@ python parking_watch.py --config parking_site.json --commit --watch 300   # 5분
 
 미리보기에서 `[미리보기] 여기서 무료등록을 호출해요: 12가3456` 이 뜨면 대조까지는 맞은 것이다.
 
-## 4. 자동으로 돌리기
+## 5. 자동으로 돌리기
 
 `.github/workflows/parking-watch.yml`이 KST 08~22시에 5분마다 돈다. 저장소
 **Settings → Secrets and variables → Actions**에 넣을 값:
@@ -130,12 +168,16 @@ python parking_watch.py --config parking_site.json --commit --watch 300   # 5분
 ## 테스트
 
 ```bash
-python test_parking_watch.py    # 엔진: 로그인 세션, 차량번호 대조, 중복 등록 방지
-python test_curl_to_recipe.py   # 변환기: cURL 해석, 비밀번호 유출 방지, 응답 구조 추측
+python test_parking_watch.py     # 엔진: 로그인 세션, 차량번호 대조, 중복 등록 방지
+python test_curl_to_recipe.py    # 변환기: cURL 해석, 비밀번호 유출 방지, 응답 구조 추측
+python test_capture_requests.py  # 전 과정: 가짜 콘솔을 크로미움으로 클릭 -> 레시피 -> 실제 등록
 ```
 
-가짜 주차 사이트를 띄워서 검증한다. 진짜 사이트의 화면이 바뀌는 건 여기서 못 잡으므로,
-그때는 레시피를 고치면 된다.
+마지막 것은 진짜 매장 콘솔을 흉내낸 가짜 사이트(로그인 화면 + 입차목록 + 무료등록 버튼)를
+띄우고 크로미움으로 사람처럼 클릭해서, 거기서 만든 레시피가 실제로 무료등록을 호출하는지까지
+확인한다. playwright가 없으면 자동으로 건너뛴다.
+
+진짜 사이트의 화면이 바뀌는 건 여기서 못 잡으므로, 그때는 레시피를 고치면 된다.
 
 ## 계정 관리
 
