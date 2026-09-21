@@ -1,0 +1,62 @@
+{
+  "_설명": "이 파일을 parking_site.json으로 복사한 뒤 사이트에 맞게 고치세요. 비밀번호는 ${환경변수}로 두고 파일에 직접 쓰지 마세요.",
+
+  "plates": ["12가3456"],
+  "plate_match": "masked",
+  "state_file": ".parking_state.json",
+  "timeout": 20,
+  "retries": 2,
+
+  "login": {
+    "prepare": {
+      "url": "https://example-parking.co.kr/login",
+      "extract": {
+        "csrf": "name=\"_csrf\"[^>]*value=\"([^\"]+)\""
+      }
+    },
+    "url": "https://example-parking.co.kr/login",
+    "method": "POST",
+    "content_type": "form",
+    "body": {
+      "userId": "${PARKING_USER}",
+      "userPw": "${PARKING_PASS}",
+      "_csrf": "${csrf}"
+    },
+    "failure_contains": "비밀번호가 일치하지"
+  },
+
+  "entries": {
+    "url": "https://example-parking.co.kr/api/inCarList",
+    "method": "GET",
+    "body": { "storeId": "${PARKING_STORE}", "size": "50" },
+    "format": "json",
+    "list_path": "data.list",
+    "fields": {
+      "plate": "carNo",
+      "id": "inSeq",
+      "entered_at": "inDtm",
+      "discount": "dcYn"
+    },
+    "already_when": { "field": "discount", "equals": ["Y", "1", true] }
+  },
+
+  "register": {
+    "url": "https://example-parking.co.kr/api/discount",
+    "method": "POST",
+    "content_type": "json",
+    "body": {
+      "storeId": "${PARKING_STORE}",
+      "inSeq": "${entry.id}",
+      "carNo": "${entry.plate}",
+      "dcCode": "FREE_WHOLE_DAY"
+    },
+    "success_contains": "\"resultCode\":\"0000\""
+  },
+
+  "notify": {
+    "url": "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage",
+    "method": "POST",
+    "content_type": "json",
+    "body": { "chat_id": "${TELEGRAM_CHAT_ID}", "text": "${message}" }
+  }
+}

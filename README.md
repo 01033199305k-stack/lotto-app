@@ -26,3 +26,15 @@ python app.py
 ## 배포 (외부 공개 + 광고 수익화하려면)
 
 Render, Railway, PythonAnywhere 등에 그대로 올리면 무료로 공개 가능합니다. 이후 페이지에 Google AdSense 스니펫만 추가하면 됩니다.
+
+## 곁다리: 자동 무료주차 등록
+
+로또와는 무관하지만 같은 저장소에서 돌리는 개인용 자동화. 주차등록 사이트에 주기적으로
+들어가 내 차가 입차해 있으면 무료주차를 대신 눌러준다. 사이트별 설정은 레시피(JSON) 한 장.
+
+- `parking_watch.py` — 로그인 → 입차 목록 → 내 차 무료등록
+- `capture_requests.py` — 브라우저를 띄워 요청을 받아적고 레시피 자동 생성
+- `curl_to_recipe.py` — 개발자도구 cURL을 레시피로 변환 (비밀번호는 자리표시자로)
+- `parking_site.example.json` — 레시피 예시
+- `.github/workflows/parking-watch.yml` — 5분마다 자동 실행
+- 설정 방법은 [PARKING.md](PARKING.md)
